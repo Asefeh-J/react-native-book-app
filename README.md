@@ -1,25 +1,30 @@
-Book Manager App
+# 📚 Book List App
 
-This is a React Native application for managing a personal collection of books. It allows users to add, view, and delete books. The app displays book information including the title, author, and location. It also provides book statistics grouped by location.
+This is a cross-platform **React Native** app for managing a personal list of books. Users can view, add, and delete books, each with a title, author, and location. It also shows a summary of books grouped by location.
 
-Features
+## ✨ Features
 
-📚 List of books with details
+- 📖 View a list of saved books
+- ➕ Add new books with title, author, and location
+- 🗑️ Delete books with confirmation
+- 📍 View total book count grouped by location
+- 🌓 RTL layout for Farsi language support
+- 🎨 Themed UI with dynamic colors
 
-➕ Add new books
+## 📦 Technologies Used
 
-🗑️ Delete books with confirmation
+- **React Native**
+- **SQLite** (local storage)
+- **React Native Vector Icons**
+- **Custom Theme System**
 
-📊 Summary view of total books by location
 
-🌗 RTL support for right-to-left languages
+## 🚀 Getting Started
 
-🎨 Theming support with spiritual theme
+### Prerequisites
 
-Technologies Used
+- Node.js
+- Expo CLI or React Native CLI
+- Android/iOS simulator or device
 
-React Native
 
-SQLite (via custom database helpers)
-
-Icons from FontAwesome
