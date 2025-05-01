@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-    backgroundColor: currentTheme.background, // Use dynamic background color
+    backgroundColor: currentTheme.background, 
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingBottom: 150, // Add space for the image at the bottom
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Playfair Display',
     fontWeight: 'bold',
     marginBottom: 30,
-    color: currentTheme.primary, // Use dynamic primary color
+    color: currentTheme.primary, 
     textAlign: 'center',
   },
   gridContainer: {
@@ -79,19 +79,18 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   gridButton: {
-    backgroundColor: currentTheme.primaryDark, // Use dynamic primary dark color
-    paddingVertical: 15,
+    backgroundColor: currentTheme.primaryDark, 
     paddingHorizontal: 20,
     borderRadius: 15,
     marginVertical: 12,
-    width: '48%', // This makes the buttons appear in a 2-column grid layout
+    width: '48%', 
     alignItems: 'center',
     elevation: 5,
     flexDirection: 'row',
     justifyContent: 'center',
   },
   buttonText: {
-    color: currentTheme.textPrimary, // Use dynamic white color
+    color: currentTheme.textPrimary, 
     fontSize: 20,
     fontWeight: '600',
     textAlign: 'center',
@@ -99,12 +98,12 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: currentTheme.textMuted, // Use dynamic muted text color
+    backgroundColor: currentTheme.textMuted, 
     marginVertical: 10,
     width: '80%',
   },
   footerText: {
-    color: currentTheme.primary, // Use dynamic primary color
+    color: currentTheme.primary, 
     fontSize: 16,
     marginTop: 20,
     fontWeight: '600',
@@ -112,8 +111,8 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 200, // Adjust the height to fit the space
-    marginTop: 20, // Space from the footer
+    height: 200, 
+    marginTop: 20, 
   },
   iconWithText: {
     alignItems: 'center',
@@ -125,11 +124,11 @@ const styles = StyleSheet.create({
   },
   starIcon: {
     marginHorizontal: 2,
-    color: '#D4AF37', // Muted gold for spiritual glow
+    color: '#D4AF37', 
   },
   footerImageWrapper: {
     width: '100%',
-    height: 200, // Adjust the height to fully show the image
+    height: 200, 
     overflow: 'hidden',
     marginTop: 30,
     position: 'relative',

@@ -13,11 +13,11 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { fetchAllBooks, deleteBook } from '../database/Database';
 import { themes } from '../constants/theme';
 
-
-I18nManager.forceRTL(true); // Force RTL layout
+I18nManager.forceRTL(true); 
 
 export default function BookListScreen() {
   const [books, setBooks] = useState([]);
+  const [locationCounts, setLocationCounts] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -27,6 +27,14 @@ export default function BookListScreen() {
     setBooks(allBooks);
     setRefreshing(false);
     setLoading(false);
+
+    // Count books by location
+    const counts = {};
+    allBooks.forEach(book => {
+      const loc = book.location || 'نامشخص';
+      counts[loc] = (counts[loc] || 0) + 1;
+    });
+    setLocationCounts(counts);
   };
 
   useEffect(() => {
@@ -89,31 +97,42 @@ export default function BookListScreen() {
       ) : books.length === 0 ? (
         <Text style={styles.emptyText}>هیچ کتابی ثبت نشده است.</Text>
       ) : (
-        <FlatList
-          data={books}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderBookItem}
-          onRefresh={loadBooks}
-          refreshing={refreshing}
-          showsVerticalScrollIndicator={true}
-          contentContainerStyle={styles.listContainer}
-          ItemSeparatorComponent={() => (
-            <View style={styles.starsRow}>
-              {[...Array(5)].map((_, index) => (
-                <Icon key={index} name="star" size={12} style={styles.starIcon} />
-              ))}
-            </View>
-          )}
-                  />
+        <>
+          <View style={{ marginBottom: 20 }}>
+            {Object.entries(locationCounts).map(([location, count]) => (
+              <Text key={location} style={styles.locationCountText}>
+                {location}: {count} کتاب
+              </Text>
+            ))}
+          </View>
+          <FlatList
+            data={books}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderBookItem}
+            onRefresh={loadBooks}
+            refreshing={refreshing}
+            showsVerticalScrollIndicator={true}
+            contentContainerStyle={styles.listContainer}
+            ItemSeparatorComponent={() => (
+              <View style={styles.starsRow}>
+                {[...Array(5)].map((_, index) => (
+                  <Icon key={index} name="star" size={12} style={styles.starIcon} />
+                ))}
+              </View>
+            )}
+          />
+        </>
       )}
     </View>
   );
 }
-const currentTheme = themes.spiritualTheme; // Switch between themes as needed
+
+const currentTheme = themes.spiritualTheme;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: currentTheme.background, // Use dynamic background color
+    backgroundColor: currentTheme.background,
     padding: 20,
   },
   headerRow: {
@@ -125,14 +144,14 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: currentTheme.shadowColor, // Use dynamic primary dark color
+    color: currentTheme.shadowColor,
     marginRight: 10,
   },
   listContainer: {
     paddingBottom: 20,
   },
   bookItem: {
-    backgroundColor: currentTheme.primaryDark, // Use dynamic secondary background color
+    backgroundColor: currentTheme.primaryDark,
     borderRadius: 10,
     padding: 15,
     marginBottom: 12,
@@ -160,16 +179,16 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginLeft: 6,
-    color: currentTheme.primary, // Use dynamic primary color for icons
+    color: currentTheme.primary,
   },
   bookText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: currentTheme.textPrimary, // Use dynamic primary dark color for book text
+    color: currentTheme.textPrimary,
     textAlign: 'right',
   },
   deleteButton: {
-    backgroundColor: currentTheme.textSecondary, // Use dynamic secondary color for delete button
+    backgroundColor: currentTheme.textSecondary,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 8,
@@ -177,22 +196,15 @@ const styles = StyleSheet.create({
   },
   bookSubText: {
     fontSize: 16,
-    color: currentTheme.textSecondary, // Use dynamic primary light color for subtitle
+    color: currentTheme.textSecondary,
     textAlign: 'right',
   },
   emptyText: {
     fontSize: 18,
-    color: currentTheme.muted, // Use dynamic muted color for empty text
+    color: currentTheme.muted,
     textAlign: 'center',
     marginTop: 50,
   },
-  separator: {
-    height: 1,
-    backgroundColor: currentTheme.accent,
-    marginVertical: 6,
-    borderRadius: 2,
-  },
-
   starsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -202,6 +214,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
     color: currentTheme.accent,
   },
-  
-  
+  locationCountText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: currentTheme.textPrimary,
+    textAlign: 'right',
+    marginBottom: 4,
+  },
 });

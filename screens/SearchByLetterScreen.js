@@ -13,7 +13,7 @@ import { searchByLetter } from '../database/Database';
 import { themes } from '../constants/theme';
 
 
-I18nManager.forceRTL(true); // Ensure RTL layout
+I18nManager.forceRTL(true); 
 
 const alphabet = [
   'ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س',
@@ -107,12 +107,12 @@ export default function SearchByLetterScreen() {
     </ScrollView>
   );
 }
-const currentTheme = themes.spiritualTheme; // Switch between themes as needed
+const currentTheme = themes.spiritualTheme; 
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-    backgroundColor: currentTheme.background, // Use dynamic background color
+    backgroundColor: currentTheme.background, 
   },
   headerRow: {
     flexDirection: 'row-reverse',
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: currentTheme.shadowColor, // Use dynamic primary dark color for header
+    color: currentTheme.shadowColor, 
     marginRight: 10,
     textAlign: 'center',
   },
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   letterButton: {
-    backgroundColor: currentTheme.primary, // Use dynamic secondary color for letter button
+    backgroundColor: currentTheme.primary, 
     paddingVertical: 10,
     paddingHorizontal: 14,
     margin: 5,
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   selectedLetter: {
-    backgroundColor: currentTheme.primaryDark, // Use dynamic primary dark color for selected letter
+    backgroundColor: currentTheme.primaryDark, 
   },
   letterText: {
     fontSize: 18,
@@ -152,13 +152,13 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
   },
   selectedLetterText: {
-    color: currentTheme.background, // Match background color for selected letter text
+    color: currentTheme.background, 
   },
   resultsContainer: {
     marginTop: 10,
   },
   bookItem: {
-    backgroundColor: currentTheme.primaryDark, // Use dynamic secondary background color for book item
+    backgroundColor: currentTheme.primaryDark, 
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
@@ -167,21 +167,21 @@ const styles = StyleSheet.create({
   bookText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: currentTheme.primary, // Use dynamic primary dark color for book text
+    color: currentTheme.primary, 
     textAlign: 'right',
     writingDirection: 'rtl',
     marginBottom: 5,
   },
   bookSubText: {
     fontSize: 16,
-    color: currentTheme.primaryDarktextSecondary, // Use dynamic primary light color for book subtext
+    color: currentTheme.primaryDarktextSecondary, 
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   noResultsText: {
     textAlign: 'center',
     fontSize: 18,
-    color: currentTheme.muted, // Use dynamic muted color for no results text
+    color: currentTheme.muted,
     marginTop: 30,
     writingDirection: 'rtl',
   },
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginLeft: 8,
-    color: currentTheme.primary, // Use dynamic primary color for icons
+    color: currentTheme.primary, 
   },
   starsRow: {
     flexDirection: 'row',

@@ -70,36 +70,36 @@ export default function AddBookScreen() {
     </View>
   );
 }
-const currentTheme = themes.spiritualTheme; // Switch between themes as needed
+const currentTheme = themes.spiritualTheme; 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center', // center vertically
-    alignItems: 'center', // center horizontally
+    justifyContent: 'center', 
+    alignItems: 'center', 
     padding: 20,
-    backgroundColor: currentTheme.background, // Use dynamic background color
+    backgroundColor: currentTheme.background, 
   },
   header: {
     fontSize: 26,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-    color: currentTheme.shadowColor, // Use dynamic primary dark color
+    color: currentTheme.shadowColor, 
   },
   input: {
     width: '80%',
     height: 50,
-    borderColor: currentTheme.primary, // Use dynamic primary light color
+    borderColor: currentTheme.primary, 
     borderWidth: 1,
     marginBottom: 15,
     paddingHorizontal: 15,
     fontSize: 18,
     textAlign: 'right',
     borderRadius: 10,
-    backgroundColor: currentTheme.background, // Use dynamic secondary background color
+    backgroundColor: currentTheme.background, 
   },
   button: {
-    backgroundColor: currentTheme.primary, // Use dynamic primary color
+    backgroundColor: currentTheme.primary, 
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderRadius: 15,
@@ -111,14 +111,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonText: {
-    color: currentTheme.white, // Use dynamic white color
+    color: currentTheme.white, 
     fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',
   },
   successMessage: {
     marginTop: 20,
-    color: currentTheme.success, // Use dynamic success color
+    color: currentTheme.success, 
     fontSize: 18,
     textAlign: 'center',
   },

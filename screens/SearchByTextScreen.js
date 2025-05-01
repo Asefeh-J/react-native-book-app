@@ -18,6 +18,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { themes } from '../constants/theme';
 
+
 I18nManager.forceRTL(true); // Force RTL layout
 
 export default function SearchByTextScreen() {
@@ -114,17 +115,17 @@ export default function SearchByTextScreen() {
             ))}
           </View>
         )}
+        
+        
       />
     </View>
   );
 }
-
-const currentTheme = themes.spiritualTheme;
-
+const currentTheme = themes.spiritualTheme; // Switch between themes as needed
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: currentTheme.background,
+    backgroundColor: currentTheme.background, // Use dynamic background color
     padding: 20,
   },
   header: {
@@ -132,22 +133,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 15,
     textAlign: 'center',
-    color: currentTheme.shadowColor,
+    color: currentTheme.shadowColor, // Use dynamic primary dark color
   },
   input: {
     height: 50,
-    backgroundColor: currentTheme.background,
+    backgroundColor: currentTheme.background, // Use dynamic secondary background color
     borderRadius: 10,
-    borderColor: currentTheme.primary,
+    borderColor: currentTheme.primary, // Use dynamic primary light color
     borderWidth: 1,
     paddingHorizontal: 15,
     fontSize: 18,
     marginBottom: 15,
     textAlign: 'right',
-    color: currentTheme.primaryDark,
+    color: currentTheme.primaryDark, // Use dynamic primary dark color
   },
   searchButton: {
-    backgroundColor: currentTheme.primary,
+    backgroundColor: currentTheme.primary, // Use dynamic secondary color for button
     paddingVertical: 10,
     borderRadius: 8,
     marginBottom: 20,
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   bookItem: {
-    backgroundColor: currentTheme.primaryDark,
+    backgroundColor: currentTheme.primaryDark, 
     borderRadius: 10,
     padding: 15,
     marginBottom: 12,
@@ -190,30 +191,30 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginLeft: 8,
-    color: currentTheme.primary,
+    color: currentTheme.primary, 
   },
   bookText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: currentTheme.primary,
+    color: currentTheme.primary, 
     textAlign: 'right',
     flexShrink: 1,
   },
   bookSubText: {
     fontSize: 18,
-    color: currentTheme.textSecondary,
+    color: currentTheme.textSecondary, 
     textAlign: 'right',
     flexShrink: 1,
   },
   deleteButton: {
-    backgroundColor: currentTheme.textSecondary,
+    backgroundColor: currentTheme.textSecondary, 
     padding: 8,
     borderRadius: 8,
     marginLeft: 5,
   },
   noResults: {
     fontSize: 18,
-    color: currentTheme.muted,
+    color: currentTheme.muted, 
     textAlign: 'center',
     marginTop: 20,
   },
@@ -226,4 +227,5 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
     color: currentTheme.accent,
   },
+  
 });
