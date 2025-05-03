@@ -44,21 +44,21 @@ To generate the Android .apk for local install or sharing:
     Expo account (create at https://expo.dev if needed)
 
 ### Steps
-    1) Clone the repository
+ Clone the repository
 
 git clone https://github.com/Asefeh-J/react-native-book-app.git
 cd react-native-book-app
 
-    2) Install dependencies
+Install dependencies
 
 npm install
 
-    3) Make the script executable and run it
+Make the script executable and run it
 
 chmod +x build-apk.sh
 ./build-apk.sh
 
-   4) Monitor build
+Monitor build
 The terminal will show a link. Use it to track progress and download your .apk when ready.
 
 🔒 License
