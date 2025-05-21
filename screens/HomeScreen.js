@@ -34,7 +34,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <ScrollView contentContainerStyle={styles(currentTheme).container}>
-      <Text style={styles(currentTheme).title}>کتابخانه من</Text>
+      <Text style={styles(currentTheme).title}>کتابخانه </Text>
 
       <View style={styles(currentTheme).gridContainer}>
         <TouchableOpacity
