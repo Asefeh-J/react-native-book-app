@@ -13,7 +13,7 @@ import { searchByLetter } from '../database/Database';
 import { themes } from '../constants/theme';
 
 
-I18nManager.forceRTL(true); 
+// I18nManager.forceRTL(true); 
 
 const alphabet = [
   'ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س',

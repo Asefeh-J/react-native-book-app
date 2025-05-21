@@ -24,9 +24,7 @@ export const insertBook = async (title, author, location) => {
   const db = await openDatabase();
   await db.runAsync(
     'INSERT INTO books (title, author, location) VALUES (?, ?, ?)',
-    title,
-    author,
-    location
+    [title, author, location]
   );
 };
 
@@ -40,54 +38,68 @@ export const fetchAllBooks = async () => {
 // Search books by title
 export const searchByTitle = async (title) => {
   const db = await openDatabase();
-  const result = await db.getAllAsync('SELECT * FROM books WHERE title LIKE ?', [`%${title}%`]);
+  const result = await db.getAllAsync(
+    'SELECT * FROM books WHERE title LIKE ?',
+    [`%${title}%`]
+  );
   return result;
 };
 
 // Search books by author
 export const searchByAuthor = async (author) => {
   const db = await openDatabase();
-  const result = await db.getAllAsync('SELECT * FROM books WHERE author LIKE ?', [`%${author}%`]);
+  const result = await db.getAllAsync(
+    'SELECT * FROM books WHERE author LIKE ?',
+    [`%${author}%`]
+  );
   return result;
 };
 
 // Search books by location
 export const searchByLocation = async (location) => {
   const db = await openDatabase();
-  const result = await db.getAllAsync('SELECT * FROM books WHERE location LIKE ?', [`%${location}%`]);
+  const result = await db.getAllAsync(
+    'SELECT * FROM books WHERE location LIKE ?',
+    [`%${location}%`]
+  );
   return result;
 };
 
 // Search books by the first letter of the title only
 export const searchByLetter = async (letter) => {
   const db = await openDatabase();
-  // Search by title starting with the given letter
   const result = await db.getAllAsync(
-    `SELECT * FROM books WHERE title LIKE ?`,
-    [`${letter}%`]  // Match books where title starts with the selected letter
+    'SELECT * FROM books WHERE title LIKE ?',
+    [`${letter}%`]
   );
   return result;
 };
 
-
 // Fetch books alphabetically by title
 export const fetchBooksAlphabeticallyByTitle = async () => {
   const db = await openDatabase();
-  const result = await db.getAllAsync('SELECT * FROM books ORDER BY title ASC');
+  const result = await db.getAllAsync(
+    'SELECT * FROM books ORDER BY title ASC'
+  );
   return result;
 };
 
 // Fetch books alphabetically by author
 export const fetchBooksAlphabeticallyByAuthor = async () => {
   const db = await openDatabase();
-  const result = await db.getAllAsync('SELECT * FROM books ORDER BY author ASC');
+  const result = await db.getAllAsync(
+    'SELECT * FROM books ORDER BY author ASC'
+  );
   return result;
 };
 
 // Delete a book by its ID
 export const deleteBook = async (id) => {
   const db = await openDatabase();
-  await db.runAsync('DELETE FROM books WHERE id = ?', [id]);
+  await db.runAsync(
+    'DELETE FROM books WHERE id = ?',
+    [id]
+  );
 };
 
 // Update a book by its ID
@@ -95,10 +107,7 @@ export const updateBook = async (id, title, author, location) => {
   const db = await openDatabase();
   await db.runAsync(
     'UPDATE books SET title = ?, author = ?, location = ? WHERE id = ?',
-    title,
-    author,
-    location,
-    id
+    [title, author, location, id]
   );
 };
 
@@ -106,6 +115,9 @@ export const updateBook = async (id, title, author, location) => {
 export const fetchBooksWithPagination = async (page, limit) => {
   const db = await openDatabase();
   const offset = (page - 1) * limit;
-  const result = await db.getAllAsync('SELECT * FROM books LIMIT ? OFFSET ?', [limit, offset]);
+  const result = await db.getAllAsync(
+    'SELECT * FROM books LIMIT ? OFFSET ?',
+    [limit, offset]
+  );
   return result;
 };

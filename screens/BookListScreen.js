@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,8 +12,9 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fetchAllBooks, deleteBook } from '../database/Database';
 import { themes } from '../constants/theme';
+import { useFocusEffect } from '@react-navigation/native';
 
-I18nManager.forceRTL(true); 
+// I18nManager.forceRTL(true);
 
 export default function BookListScreen() {
   const [books, setBooks] = useState([]);
@@ -22,24 +23,39 @@ export default function BookListScreen() {
   const [loading, setLoading] = useState(true);
 
   const loadBooks = async () => {
-    setRefreshing(true);
-    const allBooks = await fetchAllBooks();
-    setBooks(allBooks);
-    setRefreshing(false);
-    setLoading(false);
+    try {
+      setRefreshing(true);
+      const allBooks = await fetchAllBooks();
 
-    // Count books by location
-    const counts = {};
-    allBooks.forEach(book => {
-      const loc = book.location || 'نامشخص';
-      counts[loc] = (counts[loc] || 0) + 1;
-    });
-    setLocationCounts(counts);
+      if (!Array.isArray(allBooks)) {
+        throw new Error('fetchAllBooks did not return an array');
+      }
+
+      setBooks(allBooks);
+
+      // Count books by location
+      const counts = {};
+      allBooks.forEach(book => {
+        const loc = book.location || 'نامشخص';
+        counts[loc] = (counts[loc] || 0) + 1;
+      });
+      setLocationCounts(counts);
+    } catch (error) {
+      console.error('Error loading books:', error);
+      Alert.alert('خطا', 'در بارگذاری کتاب‌ها مشکلی پیش آمده است.');
+      setBooks([]);
+      setLocationCounts({});
+    } finally {
+      setRefreshing(false);
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    loadBooks();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadBooks();
+    }, [])
+  );
 
   const handleDelete = (id, title) => {
     Alert.alert(

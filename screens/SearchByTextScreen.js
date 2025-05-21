@@ -5,7 +5,6 @@ import {
   TextInput,
   FlatList,
   StyleSheet,
-  I18nManager,
   TouchableOpacity,
   Alert,
 } from 'react-native';
@@ -17,9 +16,6 @@ import {
 } from '../database/Database';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { themes } from '../constants/theme';
-
-
-I18nManager.forceRTL(true); // Force RTL layout
 
 export default function SearchByTextScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -83,7 +79,7 @@ export default function SearchByTextScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}> جستجو بین کتاب‌ها</Text>
+      <Text style={styles.header}>جستجو بین کتاب‌ها</Text>
 
       <TextInput
         style={styles.input}
@@ -103,7 +99,7 @@ export default function SearchByTextScreen() {
         renderItem={renderItem}
         ListEmptyComponent={
           results.length === 0 && searchQuery !== '' ? (
-            <Text style={styles.noResults}> نتیجه‌ای یافت نشد.</Text>
+            <Text style={styles.noResults}>نتیجه‌ای یافت نشد.</Text>
           ) : null
         }
         contentContainerStyle={styles.listContainer}
@@ -115,17 +111,17 @@ export default function SearchByTextScreen() {
             ))}
           </View>
         )}
-        
-        
       />
     </View>
   );
 }
-const currentTheme = themes.spiritualTheme; // Switch between themes as needed
+
+const currentTheme = themes.spiritualTheme;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: currentTheme.background, // Use dynamic background color
+    backgroundColor: currentTheme.background,
     padding: 20,
   },
   header: {
@@ -133,22 +129,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 15,
     textAlign: 'center',
-    color: currentTheme.shadowColor, // Use dynamic primary dark color
+    color: currentTheme.shadowColor,
   },
   input: {
     height: 50,
-    backgroundColor: currentTheme.background, // Use dynamic secondary background color
+    backgroundColor: currentTheme.background,
     borderRadius: 10,
-    borderColor: currentTheme.primary, // Use dynamic primary light color
+    borderColor: currentTheme.primary,
     borderWidth: 1,
     paddingHorizontal: 15,
     fontSize: 18,
     marginBottom: 15,
     textAlign: 'right',
-    color: currentTheme.primaryDark, // Use dynamic primary dark color
+    color: currentTheme.primaryDark,
   },
   searchButton: {
-    backgroundColor: currentTheme.primary, // Use dynamic secondary color for button
+    backgroundColor: currentTheme.primary,
     paddingVertical: 10,
     borderRadius: 8,
     marginBottom: 20,
@@ -163,7 +159,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   bookItem: {
-    backgroundColor: currentTheme.primaryDark, 
+    backgroundColor: currentTheme.primaryDark,
     borderRadius: 10,
     padding: 15,
     marginBottom: 12,
@@ -191,30 +187,30 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginLeft: 8,
-    color: currentTheme.primary, 
+    color: currentTheme.primary,
   },
   bookText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: currentTheme.primary, 
+    color: currentTheme.primary,
     textAlign: 'right',
     flexShrink: 1,
   },
   bookSubText: {
     fontSize: 18,
-    color: currentTheme.textSecondary, 
+    color: currentTheme.textSecondary,
     textAlign: 'right',
     flexShrink: 1,
   },
   deleteButton: {
-    backgroundColor: currentTheme.textSecondary, 
+    backgroundColor: currentTheme.textSecondary,
     padding: 8,
     borderRadius: 8,
     marginLeft: 5,
   },
   noResults: {
     fontSize: 18,
-    color: currentTheme.muted, 
+    color: currentTheme.muted,
     textAlign: 'center',
     marginTop: 20,
   },
@@ -227,5 +223,4 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
     color: currentTheme.accent,
   },
-  
 });
