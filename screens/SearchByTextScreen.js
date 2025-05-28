@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Keyboard, // Added Keyboard import for dismissing keyboard
+  Keyboard,
 } from 'react-native';
 import {
   searchByTitle,
@@ -16,16 +16,29 @@ import {
   deleteBook,
 } from '../database/Database';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function SearchByTextScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState([]);
 
-  const searchHandler = async () => {
-    Keyboard.dismiss(); // Dismiss keyboard when search button is pressed
+  // Clean up results when screen is unfocused
+  useFocusEffect(
+    useCallback(() => {
+      console.log('🔍 SearchByTextScreen focused');
+      return () => {
+        console.log('⬅️ SearchByTextScreen unfocused, clearing results');
+        setResults([]);
+        setSearchQuery('');
+      };
+    }, [])
+  );
 
-    if (!searchQuery.trim()) { // Use .trim() to handle empty spaces
-      setResults([]); // Clear results if search query is empty
+  const searchHandler = async () => {
+    Keyboard.dismiss();
+
+    if (!searchQuery.trim()) {
+      setResults([]);
       Alert.alert('توجه', 'لطفاً متن جستجو را وارد کنید.');
       return;
     }
@@ -35,9 +48,9 @@ export default function SearchByTextScreen() {
       const byAuthor = await searchByAuthor(searchQuery);
       const byLocation = await searchByLocation(searchQuery);
 
-      // Combine and get unique results
       const all = [...byTitle, ...byAuthor, ...byLocation];
       const unique = Array.from(new Map(all.map((item) => [item.id, item])).values());
+
       setResults(unique);
     } catch (error) {
       console.error('Error during search:', error);
@@ -57,7 +70,6 @@ export default function SearchByTextScreen() {
           onPress: async () => {
             try {
               await deleteBook(id);
-              // Update results immediately after deletion
               setResults((prev) => prev.filter((book) => book.id !== id));
             } catch (error) {
               console.error('Error deleting book:', error);
@@ -70,32 +82,39 @@ export default function SearchByTextScreen() {
     );
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.bookItem}>
-      <View style={styles.titleRow}>
-        <View style={styles.titleContent}>
-          <Icon name="book" size={16} color="#5E548E" style={styles.icon} />
-          <Text style={styles.bookText}>{item.title}</Text>
+  const renderItem = ({ item }) => {
+    if (!item?.id || !item?.title) {
+      console.warn('⚠️ Skipping invalid item:', item);
+      return null;
+    }
+
+    return (
+      <View style={styles.bookItem}>
+        <View style={styles.titleRow}>
+          <View style={styles.titleContent}>
+            <Icon name="book" size={16} color="#5E548E" style={styles.icon} />
+            <Text style={styles.bookText}>{item.title}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDelete(item.id, item.title)}
+          >
+            <Icon name="trash" size={16} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDelete(item.id, item.title)}
-        >
-          <Icon name="trash" size={16} color="#FFFFFF" /> 
-        </TouchableOpacity>
-      </View>
 
-      <View style={styles.iconTextRow}>
-        <Icon name="user" size={14} color="#5E548E" style={styles.icon} /> 
-        <Text style={styles.bookSubText}>{item.author}</Text>
-      </View>
+        <View style={styles.iconTextRow}>
+          <Icon name="user" size={14} color="#5E548E" style={styles.icon} />
+          <Text style={styles.bookSubText}>{item.author}</Text>
+        </View>
 
-      <View style={styles.iconTextRow}>
-        <Icon name="map-marker" size={14} color="#5E548E" style={styles.icon} /> 
-        <Text style={styles.bookSubText}>{item.location}</Text>
+        <View style={styles.iconTextRow}>
+          <Icon name="map-marker" size={14} color="#5E548E" style={styles.icon} />
+          <Text style={styles.bookSubText}>{item.location}</Text>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -106,9 +125,9 @@ export default function SearchByTextScreen() {
         placeholder="عنوان، نویسنده یا محل را وارد کنید"
         value={searchQuery}
         onChangeText={setSearchQuery}
-        placeholderTextColor="#A89BAE" // Hardcoded: textMuted (good for placeholders)
-        onSubmitEditing={searchHandler} // Allows searching by pressing "Enter" on keyboard
-        returnKeyType="search" // Changes keyboard return key to "Search"
+        placeholderTextColor="#A89BAE"
+        onSubmitEditing={searchHandler}
+        returnKeyType="search"
       />
 
       <TouchableOpacity style={styles.searchButton} onPress={searchHandler}>
@@ -117,10 +136,10 @@ export default function SearchByTextScreen() {
 
       <FlatList
         data={results}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => (item?.id ? item.id.toString() : index.toString())}
         renderItem={renderItem}
         ListEmptyComponent={
-          results.length === 0 && searchQuery !== '' ? ( // Only show "no results" if query exists and no results
+          results.length === 0 && searchQuery !== '' ? (
             <Text style={styles.noResults}>نتیجه‌ای یافت نشد.</Text>
           ) : null
         }
@@ -138,11 +157,10 @@ export default function SearchByTextScreen() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F1EA', // Hardcoded: background
+    backgroundColor: '#F4F1EA',
     padding: 20,
   },
   header: {
@@ -150,34 +168,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 15,
     textAlign: 'center',
-    color: '#7D6B91', // Hardcoded: shadowColor (used for header text)
+    color: '#7D6B91',
   },
   input: {
     height: 50,
-    backgroundColor: '#FFFFFF', // Hardcoded: cardBackground (or white)
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
-    borderColor: '#5E548E', // Hardcoded: primary
+    borderColor: '#5E548E',
     borderWidth: 1,
     paddingHorizontal: 15,
     fontSize: 18,
     marginBottom: 15,
     textAlign: 'right',
-    color: '#3E3C64', // Hardcoded: textPrimary (for input text)
+    color: '#3E3C64',
   },
   searchButton: {
-    backgroundColor: '#5E548E', // Hardcoded: primary
+    backgroundColor: '#5E548E',
     paddingVertical: 10,
     borderRadius: 8,
     marginBottom: 20,
     alignItems: 'center',
-    shadowColor: '#7D6B91', // Hardcoded: shadowColor
+    shadowColor: '#7D6B91',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
   },
   searchButtonText: {
-    color: '#FFFFFF', // Hardcoded: white
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -185,12 +203,12 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   bookItem: {
-    backgroundColor: '#C1BBD9', // Hardcoded: primaryDark
+    backgroundColor: '#C1BBD9',
     borderRadius: 10,
     padding: 15,
     marginBottom: 12,
     elevation: 2,
-    shadowColor: '#7D6B91', // Hardcoded: shadowColor
+    shadowColor: '#7D6B91',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -203,40 +221,40 @@ const styles = StyleSheet.create({
   titleContent: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    gap: 8, // Using gap for spacing
+    gap: 8,
   },
   iconTextRow: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
     marginTop: 5,
-    gap: 8, // Using gap for spacing
+    gap: 8,
   },
   icon: {
-    marginLeft: 8, // Adjusted to match 'gap' where appropriate
-    color: '#5E548E', // Hardcoded: primary
+    marginLeft: 8,
+    color: '#5E548E',
   },
   bookText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#3E3C64', // Hardcoded: textPrimary
+    color: '#3E3C64',
     textAlign: 'right',
     flexShrink: 1,
   },
   bookSubText: {
     fontSize: 18,
-    color: '#6C5B7B', // Hardcoded: textSecondary
+    color: '#6C5B7B',
     textAlign: 'right',
     flexShrink: 1,
   },
   deleteButton: {
-    backgroundColor: '#6C5B7B', // Hardcoded: textSecondary
+    backgroundColor: '#6C5B7B',
     padding: 8,
     borderRadius: 8,
     marginLeft: 5,
   },
   noResults: {
     fontSize: 18,
-    color: '#A89BAE', // Hardcoded: textMuted
+    color: '#A89BAE',
     textAlign: 'center',
     marginTop: 20,
   },
@@ -247,6 +265,6 @@ const styles = StyleSheet.create({
   },
   starIcon: {
     marginHorizontal: 2,
-    color: '#D4AF37', // Hardcoded: accent
+    color: '#D4AF37',
   },
 });
