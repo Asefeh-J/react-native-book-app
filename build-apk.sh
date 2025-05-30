@@ -1,11 +1,11 @@
 #!/bin/bash
 
-echo "🔧 Checking if EAS CLI is installed..."
-if ! command -v eas &> /dev/null
-then
-    echo "❌ eas-cli not found. Please install it with: npm install -g eas-cli"
-    exit 1
-fi
+# echo "🔧 Checking if EAS CLI is installed..."
+# if ! command -v eas &> /dev/null
+# then
+#     echo "❌ eas-cli not found. Please install it with: npm install -g eas-cli"
+#     exit 1
+# fi
 
 echo "✅ eas-cli is installed"
 

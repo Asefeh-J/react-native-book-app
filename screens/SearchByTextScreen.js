@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   Keyboard,
+  ActivityIndicator,
 } from 'react-native';
 import {
   searchByTitle,
@@ -17,19 +18,27 @@ import {
 } from '../database/Database';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useFocusEffect } from '@react-navigation/native';
+import { InteractionManager } from 'react-native';
 
 export default function SearchByTextScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState([]);
+  const [isReady, setIsReady] = useState(false);
 
-  // Clean up results when screen is unfocused
+  // Handle interaction delay
   useFocusEffect(
     useCallback(() => {
       console.log('🔍 SearchByTextScreen focused');
+      const interaction = InteractionManager.runAfterInteractions(() => {
+        setIsReady(true);
+      });
+
       return () => {
         console.log('⬅️ SearchByTextScreen unfocused, clearing results');
-        setResults([]);
         setSearchQuery('');
+        setResults([]);
+        setIsReady(false);
+        interaction.cancel();
       };
     }, [])
   );
@@ -53,7 +62,7 @@ export default function SearchByTextScreen() {
 
       setResults(unique);
     } catch (error) {
-      console.error('Error during search:', error);
+      console.error('❌ Error during search:', error);
       Alert.alert('خطا', 'مشکلی در جستجو پیش آمد.');
       setResults([]);
     }
@@ -72,7 +81,7 @@ export default function SearchByTextScreen() {
               await deleteBook(id);
               setResults((prev) => prev.filter((book) => book.id !== id));
             } catch (error) {
-              console.error('Error deleting book:', error);
+              console.error('❌ Error deleting book:', error);
               Alert.alert('خطا', 'مشکلی در حذف کتاب پیش آمد.');
             }
           },
@@ -82,11 +91,8 @@ export default function SearchByTextScreen() {
     );
   };
 
-  const renderItem = ({ item }) => {
-    if (!item?.id || !item?.title) {
-      console.warn('⚠️ Skipping invalid item:', item);
-      return null;
-    }
+  const renderItem = ({ item, index }) => {
+    if (!item || !item.id || !item.title) return null;
 
     return (
       <View style={styles.bookItem}>
@@ -116,6 +122,14 @@ export default function SearchByTextScreen() {
     );
   };
 
+  if (!isReady) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#D4AF37" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>جستجو بین کتاب‌ها</Text>
@@ -131,7 +145,7 @@ export default function SearchByTextScreen() {
       />
 
       <TouchableOpacity style={styles.searchButton} onPress={searchHandler}>
-        <Text style={styles.searchButtonText}>جستجو </Text>
+        <Text style={styles.searchButtonText}>جستجو</Text>
       </TouchableOpacity>
 
       <FlatList
@@ -162,6 +176,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F4F1EA',
     padding: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#F4F1EA',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     fontSize: 26,

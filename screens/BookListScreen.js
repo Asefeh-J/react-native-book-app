@@ -19,11 +19,12 @@ export default function BookListScreen() {
   const [loading, setLoading] = useState(true);
 
   const loadBooks = async () => {
+    let isMounted = true;
     try {
       setRefreshing(true);
       setLoading(true);
       const allBooks = await fetchAllBooks();
-      if (Array.isArray(allBooks)) {
+      if (isMounted && Array.isArray(allBooks)) {
         setBooks(allBooks);
         const counts = {};
         allBooks.forEach(book => {
@@ -44,25 +45,34 @@ export default function BookListScreen() {
       setBooks([]);
       setLocationCounts({});
     } finally {
-      setRefreshing(false);
-      setLoading(false);
+      if (isMounted) {
+        setRefreshing(false);
+        setLoading(false);
+      }
     }
+
+    return () => {
+      isMounted = false;
+    };
   };
 
   useFocusEffect(
     useCallback(() => {
-      // When this screen is focused, load your books
+      let isActive = true;
       loadBooks();
 
-      // On blur, clear out the state to avoid lingering data / white screens
       return () => {
-        setBooks([]);
-        setLocationCounts({});
+        console.log('👋 BookListScreen unfocused — clearing books and counts');
+        if (isActive) {
+          setBooks([]);
+          setLocationCounts({});
+        }
+        isActive = false;
       };
     }, [])
   );
 
-  const handleDelete = (id, title) => {
+  const handleDelete = async (id, title) => {
     Alert.alert(
       'حذف کتاب',
       `آیا از حذف "${title}" مطمئن هستید؟`,
@@ -70,7 +80,6 @@ export default function BookListScreen() {
         { text: 'انصراف', style: 'cancel' },
         {
           text: 'حذف',
-          style: 'destructive',
           onPress: async () => {
             try {
               await deleteBook(id);
@@ -80,6 +89,7 @@ export default function BookListScreen() {
               Alert.alert('خطا', 'مشکلی در حذف کتاب پیش آمد.');
             }
           },
+          style: 'destructive',
         },
       ]
     );
@@ -102,11 +112,11 @@ export default function BookListScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.iconRow}>
-          <Icon name="user" size={16} color="#5E548E" style={styles.icon} />
+          <Icon name="user" size={16} style={styles.icon} />
           <Text style={styles.bookSubText}>{item.author}</Text>
         </View>
         <View style={styles.iconRow}>
-          <Icon name="map-marker" size={16} color="#5E548E" style={styles.icon} />
+          <Icon name="map-marker" size={16} style={styles.icon} />
           <Text style={styles.bookSubText}>{item.location}</Text>
         </View>
       </View>
@@ -134,16 +144,16 @@ export default function BookListScreen() {
           </View>
           <FlatList
             data={books}
-            keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+            keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
             renderItem={renderBookItem}
             onRefresh={loadBooks}
             refreshing={refreshing}
-            showsVerticalScrollIndicator
+            showsVerticalScrollIndicator={true}
             contentContainerStyle={styles.listContainer}
             ItemSeparatorComponent={() => (
               <View style={styles.starsRow}>
-                {[...Array(5)].map((_, i) => (
-                  <Icon key={i} name="star" size={12} style={styles.starIcon} />
+                {[...Array(5)].map((_, index) => (
+                  <Icon key={index} name="star" size={12} style={styles.starIcon} />
                 ))}
               </View>
             )}
@@ -155,10 +165,24 @@ export default function BookListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F1EA', padding: 20 },
-  headerRow: { flexDirection: 'row-reverse', justifyContent: 'center', marginBottom: 20 },
-  header: { fontSize: 26, fontWeight: 'bold', color: '#7D6B91' },
-  listContainer: { paddingBottom: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: '#F4F1EA',
+    padding: 20,
+  },
+  headerRow: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  header: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#7D6B91',
+  },
+  listContainer: {
+    paddingBottom: 20,
+  },
   bookItem: {
     backgroundColor: '#C1BBD9',
     borderRadius: 10,
@@ -170,15 +194,64 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-  titleRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center' },
-  iconRowTitle: { flexDirection: 'row-reverse', alignItems: 'center', flexShrink: 1, marginEnd: 10 },
-  iconRow: { flexDirection: 'row-reverse', alignItems: 'center', marginTop: 5 },
-  icon: { marginLeft: 6, color: '#5E548E' },
-  bookText: { fontSize: 20, fontWeight: 'bold', color: '#3E3C64', textAlign: 'right' },
-  bookSubText: { fontSize: 16, color: '#6C5B7B', textAlign: 'right' },
-  deleteButton: { backgroundColor: '#6C5B7B', padding: 5, borderRadius: 8, marginLeft: 10 },
-  emptyText: { fontSize: 18, color: '#A89BAE', textAlign: 'center', marginTop: 50 },
-  starsRow: { flexDirection: 'row', justifyContent: 'center', marginVertical: 10 },
-  starIcon: { marginHorizontal: 2, color: '#D4AF37' },
-  locationCountText: { fontSize: 16, fontWeight: '600', color: '#3E3C64', textAlign: 'right', marginBottom: 4 },
+  titleRow: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  iconRowTitle: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    flexShrink: 1,
+    marginEnd: 10,
+  },
+  iconRow: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  icon: {
+    marginLeft: 6,
+    color: '#5E548E',
+  },
+  bookText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#3E3C64',
+    textAlign: 'right',
+  },
+  bookSubText: {
+    fontSize: 16,
+    color: '#6C5B7B',
+    textAlign: 'right',
+  },
+  deleteButton: {
+    backgroundColor: '#6C5B7B',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: '#A89BAE',
+    textAlign: 'center',
+    marginTop: 50,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 10,
+  },
+  starIcon: {
+    marginHorizontal: 2,
+    color: '#D4AF37',
+  },
+  locationCountText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#3E3C64',
+    textAlign: 'right',
+    marginBottom: 4,
+  },
 });

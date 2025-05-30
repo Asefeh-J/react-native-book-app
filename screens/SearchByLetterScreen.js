@@ -6,9 +6,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useFocusEffect } from '@react-navigation/native';
+import { InteractionManager } from 'react-native';
 import { searchByLetter } from '../database/Database';
 
 const alphabet = [
@@ -20,21 +22,29 @@ const alphabet = [
 export default function SearchByLetterScreen() {
   const [selectedLetter, setSelectedLetter] = useState('');
   const [books, setBooks] = useState([]);
+  const [isReady, setIsReady] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       console.log('🔠 SearchByLetterScreen focused');
+
+      const interactionTask = InteractionManager.runAfterInteractions(() => {
+        setIsReady(true);
+      });
+
       return () => {
         console.log('↩️ Leaving SearchByLetterScreen, clearing state');
         setBooks([]);
         setSelectedLetter('');
+        setIsReady(false);
+        interactionTask.cancel();
       };
     }, [])
   );
 
   const searchByLetterFunc = async (letter) => {
     setSelectedLetter(letter);
-    setBooks([]); // Clear previous results immediately
+    setBooks([]);
     try {
       const booksResult = await searchByLetter(letter);
       if (Array.isArray(booksResult)) {
@@ -73,6 +83,14 @@ export default function SearchByLetterScreen() {
       </View>
     );
   };
+
+  if (!isReady) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#5E548E" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
