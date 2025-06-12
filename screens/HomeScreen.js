@@ -17,20 +17,25 @@ export default function HomeScreen({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
+      let isActive = true;
       console.log('🏠 HomeScreen focused');
-
+  
       const interactionTask = InteractionManager.runAfterInteractions(() => {
-        console.log('✅ Interaction complete, safe to render');
-        setIsReady(true);
+        if (isActive) {
+          console.log('✅ Interaction complete, safe to render');
+          setIsReady(true);
+        }
       });
-
+  
       return () => {
         console.log('👋 HomeScreen unfocused');
+        isActive = false;
         interactionTask.cancel();
         setIsReady(false);
       };
     }, [])
   );
+  
 
   useEffect(() => {
     console.log('HomeScreen: useEffect - Mounted');

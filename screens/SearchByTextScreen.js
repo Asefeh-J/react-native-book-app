@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -24,17 +24,23 @@ export default function SearchByTextScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isReady, setIsReady] = useState(false);
+  const isMountedRef = useRef(false);
 
-  // Handle interaction delay
   useFocusEffect(
     useCallback(() => {
       console.log('🔍 SearchByTextScreen focused');
+      isMountedRef.current = true;
+
       const interaction = InteractionManager.runAfterInteractions(() => {
-        setIsReady(true);
+        if (isMountedRef.current) {
+          setIsReady(true);
+          console.log('✅ SearchByTextScreen interaction complete');
+        }
       });
 
       return () => {
         console.log('⬅️ SearchByTextScreen unfocused, clearing results');
+        isMountedRef.current = false;
         setSearchQuery('');
         setResults([]);
         setIsReady(false);
@@ -44,6 +50,8 @@ export default function SearchByTextScreen() {
   );
 
   const searchHandler = async () => {
+    if (!isMountedRef.current) return;
+
     Keyboard.dismiss();
 
     if (!searchQuery.trim()) {
@@ -53,15 +61,22 @@ export default function SearchByTextScreen() {
     }
 
     try {
-      const byTitle = await searchByTitle(searchQuery);
-      const byAuthor = await searchByAuthor(searchQuery);
-      const byLocation = await searchByLocation(searchQuery);
+      console.log(`🔎 Starting search for "${searchQuery}"...`);
+      const [byTitle, byAuthor, byLocation] = await Promise.all([
+        searchByTitle(searchQuery),
+        searchByAuthor(searchQuery),
+        searchByLocation(searchQuery),
+      ]);
+
+      if (!isMountedRef.current) return;
 
       const all = [...byTitle, ...byAuthor, ...byLocation];
       const unique = Array.from(new Map(all.map((item) => [item.id, item])).values());
 
+      console.log(`✅ Found ${unique.length} unique results`);
       setResults(unique);
     } catch (error) {
+      if (!isMountedRef.current) return;
       console.error('❌ Error during search:', error);
       Alert.alert('خطا', 'مشکلی در جستجو پیش آمد.');
       setResults([]);
@@ -79,7 +94,9 @@ export default function SearchByTextScreen() {
           onPress: async () => {
             try {
               await deleteBook(id);
-              setResults((prev) => prev.filter((book) => book.id !== id));
+              if (isMountedRef.current) {
+                setResults((prev) => prev.filter((book) => book.id !== id));
+              }
             } catch (error) {
               console.error('❌ Error deleting book:', error);
               Alert.alert('خطا', 'مشکلی در حذف کتاب پیش آمد.');
@@ -91,7 +108,7 @@ export default function SearchByTextScreen() {
     );
   };
 
-  const renderItem = ({ item, index }) => {
+  const renderItem = ({ item }) => {
     if (!item || !item.id || !item.title) return null;
 
     return (

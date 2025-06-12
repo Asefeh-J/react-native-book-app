@@ -21,7 +21,7 @@ export default function AddBookScreen() {
   const handleAddBook = async () => {
     if (!title || !author || !location) {
       setSuccessMessage('لطفاً همه فیلدها را پر کنید.');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      // setTimeout(() => setSuccessMessage(''), 3000);
       return;
     }
 
@@ -31,12 +31,12 @@ export default function AddBookScreen() {
       setTitle('');
       setAuthor('');
       setLocation('');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      // setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       console.error("Error adding book:", error);
       setSuccessMessage('مشکلی در اضافه کردن کتاب وجود داشت.');
       Alert.alert('خطا', 'مشکلی در اضافه کردن کتاب وجود داشت.');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      // setTimeout(() => setSuccessMessage(''), 3000);
     }
   };
 

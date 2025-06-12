@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   FlatList,
@@ -23,17 +23,24 @@ export default function SearchByLetterScreen() {
   const [selectedLetter, setSelectedLetter] = useState('');
   const [books, setBooks] = useState([]);
   const [isReady, setIsReady] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const isMountedRef = useRef(true);
 
   useFocusEffect(
     useCallback(() => {
+      isMountedRef.current = true;
       console.log('🔠 SearchByLetterScreen focused');
 
       const interactionTask = InteractionManager.runAfterInteractions(() => {
-        setIsReady(true);
+        if (isMountedRef.current) {
+          setIsReady(true);
+          console.log('✅ Interaction complete, ready to render');
+        }
       });
 
       return () => {
         console.log('↩️ Leaving SearchByLetterScreen, clearing state');
+        isMountedRef.current = false;
         setBooks([]);
         setSelectedLetter('');
         setIsReady(false);
@@ -42,29 +49,40 @@ export default function SearchByLetterScreen() {
     }, [])
   );
 
-  const searchByLetterFunc = async (letter) => {
+  const handleSearch = useCallback(async (letter) => {
+    if (selectedLetter === letter) return;
+
     setSelectedLetter(letter);
     setBooks([]);
+    setSearching(true);
+    console.log(`🔍 Searching books by letter: "${letter}"`);
+
     try {
-      const booksResult = await searchByLetter(letter);
-      if (Array.isArray(booksResult)) {
-        setBooks(booksResult);
+      const result = await searchByLetter(letter);
+      if (!isMountedRef.current) return;
+
+      if (Array.isArray(result)) {
+        console.log(`✅ Found ${result.length} books`);
+        setBooks(result);
       } else {
-        console.warn('⚠️ searchByLetter did not return an array:', booksResult);
+        console.warn('⚠️ Unexpected result from searchByLetter:', result);
         setBooks([]);
       }
-    } catch (error) {
-      console.error('❌ Error searching by letter:', error);
-      Alert.alert('خطا', 'مشکلی در جستجو بر اساس حرف پیش آمد.');
+    } catch (err) {
+      if (!isMountedRef.current) return;
+      console.error('❌ Search error:', err);
+      Alert.alert('خطا', 'در جستجو مشکلی پیش آمد.');
       setBooks([]);
+    } finally {
+      if (isMountedRef.current) {
+        setSearching(false);
+        console.log('🔁 Search complete');
+      }
     }
-  };
+  }, [selectedLetter]);
 
-  const renderBookItem = ({ item }) => {
-    if (!item?.id || !item?.title) {
-      console.warn('⚠️ Invalid book item:', item);
-      return null;
-    }
+  const renderItem = useCallback(({ item }) => {
+    if (!item?.id || !item?.title) return null;
 
     return (
       <View style={styles.bookItem}>
@@ -82,11 +100,20 @@ export default function SearchByLetterScreen() {
         </View>
       </View>
     );
-  };
+  }, []);
+
+  const renderSeparator = useCallback(() => (
+    <View style={styles.starsRow}>
+      {[...Array(5)].map((_, index) => (
+        <Icon key={index} name="star" size={12} style={styles.starIcon} />
+      ))}
+    </View>
+  ), []);
 
   if (!isReady) {
+    console.log('⏳ Waiting for interaction to complete...');
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#5E548E" />
       </View>
     );
@@ -94,9 +121,7 @@ export default function SearchByLetterScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>جستجو بر اساس حروف الفبا</Text>
-      </View>
+      <Text style={styles.title}>جستجو بر اساس حروف الفبا</Text>
 
       <View style={styles.lettersContainer}>
         {alphabet.map((letter, index) => (
@@ -106,7 +131,7 @@ export default function SearchByLetterScreen() {
               styles.letterButton,
               selectedLetter === letter && styles.selectedLetter,
             ]}
-            onPress={() => searchByLetterFunc(letter)}
+            onPress={() => handleSearch(letter)}
           >
             <Text
               style={[
@@ -120,26 +145,20 @@ export default function SearchByLetterScreen() {
         ))}
       </View>
 
-      {books.length === 0 && selectedLetter !== '' ? (
-        <Text style={styles.noResultsText}>
-          نتیجه‌ای برای "{selectedLetter}" یافت نشد.
-        </Text>
+      {searching ? (
+        <ActivityIndicator size="small" color="#5E548E" style={{ marginTop: 20 }} />
+      ) : books.length === 0 && selectedLetter !== '' ? (
+        <Text style={styles.noResultsText}>نتیجه‌ای یافت نشد.</Text>
       ) : (
         <FlatList
           data={books}
           keyExtractor={(item, index) =>
             item?.id ? item.id.toString() : index.toString()
           }
-          renderItem={renderBookItem}
-          showsVerticalScrollIndicator={true}
+          renderItem={renderItem}
+          ItemSeparatorComponent={renderSeparator}
           contentContainerStyle={styles.flatListContentContainer}
-          ItemSeparatorComponent={() => (
-            <View style={styles.starsRow}>
-              {[...Array(5)].map((_, index) => (
-                <Icon key={index} name="star" size={12} style={styles.starIcon} />
-              ))}
-            </View>
-          )}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
@@ -149,22 +168,21 @@ export default function SearchByLetterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    padding: 20,
     backgroundColor: '#F4F1EA',
   },
-  headerRow: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#F4F1EA',
     justifyContent: 'center',
-    marginBottom: 20,
+    alignItems: 'center',
   },
   title: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#7D6B91',
-    marginRight: 10,
+    marginBottom: 15,
     textAlign: 'center',
+    color: '#7D6B91',
   },
   lettersContainer: {
     flexDirection: 'row-reverse',
@@ -228,13 +246,6 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
     flexShrink: 1,
   },
-  noResultsText: {
-    textAlign: 'center',
-    fontSize: 18,
-    color: '#A89BAE',
-    marginTop: 30,
-    writingDirection: 'rtl',
-  },
   row: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
@@ -243,6 +254,12 @@ const styles = StyleSheet.create({
   icon: {
     marginLeft: 8,
     color: '#5E548E',
+  },
+  noResultsText: {
+    fontSize: 18,
+    color: '#A89BAE',
+    textAlign: 'center',
+    marginTop: 30,
   },
   starsRow: {
     flexDirection: 'row',

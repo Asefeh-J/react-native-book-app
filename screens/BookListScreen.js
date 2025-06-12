@@ -1,4 +1,6 @@
-import React, { useState, useCallback } from 'react';
+// Final safe version of BookListScreen with isMountedRef
+
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +9,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  InteractionManager,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fetchAllBooks, deleteBook } from '../database/Database';
@@ -17,62 +20,76 @@ export default function BookListScreen() {
   const [locationCounts, setLocationCounts] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
+  const isMountedRef = useRef(false);
 
-  const loadBooks = async () => {
-    let isMounted = true;
-    try {
-      setRefreshing(true);
-      setLoading(true);
-      const allBooks = await fetchAllBooks();
-      if (isMounted && Array.isArray(allBooks)) {
-        setBooks(allBooks);
-        const counts = {};
-        allBooks.forEach(book => {
-          const loc = String(book.location || 'نامشخص');
-          counts[loc] = (counts[loc] || 0) + 1;
-        });
-        setLocationCounts(counts);
-      } else {
+  const loadBooks = useCallback(() => {
+    console.log('🔄 Starting to load books...');
+    setRefreshing(true);
+    setLoading(true);
+
+    fetchAllBooks()
+      .then((allBooks) => {
+        if (!isMountedRef.current) return;
+        if (Array.isArray(allBooks)) {
+          console.log(`📚 Fetched ${allBooks.length} books`);
+          setBooks(allBooks);
+          const counts = {};
+          allBooks.forEach((book) => {
+            const loc = String(book.location || 'نامشخص');
+            counts[loc] = (counts[loc] || 0) + 1;
+          });
+          setLocationCounts(counts);
+        } else {
+          setBooks([]);
+          setLocationCounts({});
+          if (__DEV__) {
+            console.warn('⚠️ fetchAllBooks did not return an array');
+            Alert.alert('Data Format Error', 'fetchAllBooks did not return an array.');
+          }
+        }
+      })
+      .catch((error) => {
+        if (!isMountedRef.current) return;
+        console.error('❌ Error loading books:', error);
+        Alert.alert('خطا', 'در بارگذاری کتاب‌ها مشکلی پیش آمده است.');
         setBooks([]);
         setLocationCounts({});
-        if (__DEV__) {
-          Alert.alert('Data Format Error', 'fetchAllBooks did not return an array.');
-        }
-      }
-    } catch (error) {
-      console.error('Error loading books:', error);
-      Alert.alert('خطا', 'در بارگذاری کتاب‌ها مشکلی پیش آمده است.');
-      setBooks([]);
-      setLocationCounts({});
-    } finally {
-      if (isMounted) {
+      })
+      .finally(() => {
+        if (!isMountedRef.current) return;
         setRefreshing(false);
         setLoading(false);
-      }
-    }
-
-    return () => {
-      isMounted = false;
-    };
-  };
+        console.log('✅ Finished loading books');
+      });
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      let isActive = true;
-      loadBooks();
+      console.log('📚 BookListScreen focused');
+      isMountedRef.current = true;
+
+      const task = InteractionManager.runAfterInteractions(() => {
+        if (isMountedRef.current) {
+          console.log('✅ BookListScreen interaction complete');
+          setIsReady(true);
+          loadBooks();
+        }
+      });
 
       return () => {
-        console.log('👋 BookListScreen unfocused — clearing books and counts');
-        if (isActive) {
-          setBooks([]);
-          setLocationCounts({});
-        }
-        isActive = false;
+        console.log('👋 BookListScreen unfocused');
+        isMountedRef.current = false;
+        task.cancel();
+        setIsReady(false);
+        setBooks([]);
+        setLocationCounts({});
       };
-    }, [])
+    }, [loadBooks])
   );
 
-  const handleDelete = async (id, title) => {
+  const handleDelete = (id, title) => {
+    console.log(`🗑 Attempting to delete book: ${title} (ID: ${id})`);
     Alert.alert(
       'حذف کتاب',
       `آیا از حذف "${title}" مطمئن هستید؟`,
@@ -80,14 +97,16 @@ export default function BookListScreen() {
         { text: 'انصراف', style: 'cancel' },
         {
           text: 'حذف',
-          onPress: async () => {
-            try {
-              await deleteBook(id);
-              loadBooks();
-            } catch (error) {
-              console.error('Error deleting book:', error);
-              Alert.alert('خطا', 'مشکلی در حذف کتاب پیش آمد.');
-            }
+          onPress: () => {
+            deleteBook(id)
+              .then(() => {
+                console.log(`✅ Book deleted: ${title}`);
+                if (isMountedRef.current) loadBooks();
+              })
+              .catch((error) => {
+                console.error('❌ Error deleting book:', error);
+                Alert.alert('خطا', 'مشکلی در حذف کتاب پیش آمد.');
+              });
           },
           style: 'destructive',
         },
@@ -96,7 +115,8 @@ export default function BookListScreen() {
   };
 
   const renderBookItem = ({ item }) => {
-    if (!item || !item.id) return null;
+    if (!item?.id) return null;
+
     return (
       <View style={styles.bookItem}>
         <View style={styles.titleRow}>
@@ -122,6 +142,15 @@ export default function BookListScreen() {
       </View>
     );
   };
+
+  if (!isReady) {
+    console.log('⏳ Waiting for interactions to finish before rendering BookListScreen');
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#D4AF37" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -164,11 +193,18 @@ export default function BookListScreen() {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F4F1EA',
     padding: 20,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F4F1EA',
   },
   headerRow: {
     flexDirection: 'row-reverse',

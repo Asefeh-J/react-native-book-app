@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "کتابخانه ",
-    "slug": "preview",
+    "slug": "my-library-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -33,7 +33,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "f537cf5e-2dde-4da5-8c0e-5a99b388b7d0"
+        "projectId": "f822633a-553e-44be-9ab2-b6aaca18097e"
       }
     },
     "runtimeVersion": {
@@ -42,6 +42,6 @@
     "updates": {
       "url": "https://u.expo.dev/f822633a-553e-44be-9ab2-b6aaca18097e"
     },
-    "owner": "mehranboxing"
+    "owner": "asefeh"
   }
 }
