@@ -19,14 +19,14 @@ export default function HomeScreen({ navigation }) {
     useCallback(() => {
       let isActive = true;
       console.log('🏠 HomeScreen focused');
-  
+
       const interactionTask = InteractionManager.runAfterInteractions(() => {
         if (isActive) {
           console.log('✅ Interaction complete, safe to render');
           setIsReady(true);
         }
       });
-  
+
       return () => {
         console.log('👋 HomeScreen unfocused');
         isActive = false;
@@ -35,7 +35,6 @@ export default function HomeScreen({ navigation }) {
       };
     }, [])
   );
-  
 
   useEffect(() => {
     console.log('HomeScreen: useEffect - Mounted');
@@ -53,9 +52,12 @@ export default function HomeScreen({ navigation }) {
     console.log('HomeScreen: Attempting to return JSX');
     return (
       <ScrollView contentContainerStyle={styles.container}>
+        {console.log('🧱 Rendering main container')}
         <Text style={styles.title}>کتابخانه </Text>
 
         <View style={styles.gridContainer}>
+          {console.log('🔲 Rendering grid buttons')}
+
           <TouchableOpacity
             style={styles.gridButton}
             onPress={() => {
@@ -102,6 +104,7 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         <View style={styles.iconWithText}>
+          {console.log('🌟 Rendering footer stars and poem')}
           <View style={styles.starsRow}>
             {[...Array(5)].map((_, index) => (
               <Icon key={index} name="star" size={12} style={styles.starIcon} />
@@ -111,6 +114,7 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         <View style={styles.footerImageWrapper}>
+          {console.log('🖼 Rendering footer image background')}
           <ImageBackground
             source={require('../assets/images/texture9.png')}
             style={styles.footerImage}

@@ -24,6 +24,7 @@ export default function SearchByTextScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isReady, setIsReady] = useState(false);
+  const [searching, setSearching] = useState(false);
   const isMountedRef = useRef(false);
 
   useFocusEffect(
@@ -44,24 +45,29 @@ export default function SearchByTextScreen() {
         setSearchQuery('');
         setResults([]);
         setIsReady(false);
+        setSearching(false);
         interaction.cancel();
       };
     }, [])
   );
 
   const searchHandler = async () => {
-    if (!isMountedRef.current) return;
+    if (!isMountedRef.current || !isReady || searching) return;
 
     Keyboard.dismiss();
 
     if (!searchQuery.trim()) {
-      setResults([]);
-      Alert.alert('توجه', 'لطفاً متن جستجو را وارد کنید.');
+      if (isMountedRef.current) {
+        setResults([]);
+        Alert.alert('توجه', 'لطفاً متن جستجو را وارد کنید.');
+      }
       return;
     }
 
     try {
       console.log(`🔎 Starting search for "${searchQuery}"...`);
+      setSearching(true);
+
       const [byTitle, byAuthor, byLocation] = await Promise.all([
         searchByTitle(searchQuery),
         searchByAuthor(searchQuery),
@@ -80,6 +86,8 @@ export default function SearchByTextScreen() {
       console.error('❌ Error during search:', error);
       Alert.alert('خطا', 'مشکلی در جستجو پیش آمد.');
       setResults([]);
+    } finally {
+      if (isMountedRef.current) setSearching(false);
     }
   };
 
@@ -187,6 +195,7 @@ export default function SearchByTextScreen() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

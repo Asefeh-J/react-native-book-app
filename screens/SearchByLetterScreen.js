@@ -24,12 +24,12 @@ export default function SearchByLetterScreen() {
   const [books, setBooks] = useState([]);
   const [isReady, setIsReady] = useState(false);
   const [searching, setSearching] = useState(false);
-  const isMountedRef = useRef(true);
+  const isMountedRef = useRef(false); // ✅ Start as false
 
   useFocusEffect(
     useCallback(() => {
-      isMountedRef.current = true;
       console.log('🔠 SearchByLetterScreen focused');
+      isMountedRef.current = true;
 
       const interactionTask = InteractionManager.runAfterInteractions(() => {
         if (isMountedRef.current) {
@@ -50,7 +50,7 @@ export default function SearchByLetterScreen() {
   );
 
   const handleSearch = useCallback(async (letter) => {
-    if (selectedLetter === letter) return;
+    if (selectedLetter === letter || searching || !isMountedRef.current) return;
 
     setSelectedLetter(letter);
     setBooks([]);
@@ -59,7 +59,10 @@ export default function SearchByLetterScreen() {
 
     try {
       const result = await searchByLetter(letter);
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {
+        console.log('⚠️ Skipped setting state - screen is not mounted');
+        return;
+      }
 
       if (Array.isArray(result)) {
         console.log(`✅ Found ${result.length} books`);
@@ -69,7 +72,10 @@ export default function SearchByLetterScreen() {
         setBooks([]);
       }
     } catch (err) {
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {
+        console.log('⚠️ Skipped error alert - screen is not mounted');
+        return;
+      }
       console.error('❌ Search error:', err);
       Alert.alert('خطا', 'در جستجو مشکلی پیش آمد.');
       setBooks([]);
@@ -79,7 +85,7 @@ export default function SearchByLetterScreen() {
         console.log('🔁 Search complete');
       }
     }
-  }, [selectedLetter]);
+  }, [selectedLetter, searching]);
 
   const renderItem = useCallback(({ item }) => {
     if (!item?.id || !item?.title) return null;
