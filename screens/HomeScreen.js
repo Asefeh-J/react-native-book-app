@@ -45,96 +45,103 @@ export default function HomeScreen({ navigation }) {
 
   if (!isReady) {
     console.log('⌛ HomeScreen waiting for interaction...');
-    return null; // Avoid rendering too early
+    return null;
   }
 
   try {
     console.log('HomeScreen: Attempting to return JSX');
     return (
-      <ScrollView contentContainerStyle={styles.container}>
-        {console.log('🧱 Rendering main container')}
-        <Text style={styles.title}>کتابخانه </Text>
+      <View style={{ flex: 1, backgroundColor: '#F4F1EA' }}>
+        <ScrollView contentContainerStyle={styles.container}>
+          {console.log('🧱 Rendering main container')}
+          <Text style={styles.title}>کتابخانه </Text>
 
-        <View style={styles.gridContainer}>
-          {console.log('🔲 Rendering grid buttons')}
+          <View style={styles.gridContainer}>
+            {console.log('🔲 Rendering grid buttons')}
 
-          <TouchableOpacity
-            style={styles.gridButton}
-            onPress={() => {
-              console.log('HomeScreen: Navigating to AddBook');
-              navigation.navigate('AddBook');
-            }}
-          >
-            <Icon name="plus" size={25} color="#FFFFFF" />
-            <Text style={styles.buttonText}> افزودن کتاب جدید</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.gridButton}
+              onPress={() => {
+                console.log('HomeScreen: Navigating to AddBook');
+                navigation.navigate('AddBook');
+              }}
+            >
+              <Icon name="plus" size={25} color="#FFFFFF" />
+              <Text style={styles.buttonText}> افزودن کتاب جدید</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.gridButton}
-            onPress={() => {
-              console.log('HomeScreen: Navigating to BookList');
-              navigation.navigate('BookList');
-            }}
-          >
-            <Icon name="book" size={25} color="#FFFFFF" />
-            <Text style={styles.buttonText}> مشاهده همه کتاب‌ها</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.gridButton}
+              onPress={() => {
+                console.log('HomeScreen: Navigating to BookList');
+                navigation.navigate('BookList');
+              }}
+            >
+              <Icon name="book" size={25} color="#FFFFFF" />
+              <Text style={styles.buttonText}> مشاهده همه کتاب‌ها</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.gridButton}
-            onPress={() => {
-              console.log('HomeScreen: Navigating to SearchByText');
-              navigation.navigate('SearchByText');
-            }}
-          >
-            <Icon name="search" size={25} color="#FFFFFF" />
-            <Text style={styles.buttonText}> جستجو بر اساس عنوان، نویسنده یا مکان</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.gridButton}
+              onPress={() => {
+                console.log('HomeScreen: Navigating to SearchByText');
+                navigation.navigate('SearchByText');
+              }}
+            >
+              <Icon name="search" size={25} color="#FFFFFF" />
+              <Text style={styles.buttonText}> جستجو بر اساس عنوان، نویسنده یا مکان</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.gridButton}
-            onPress={() => {
-              console.log('HomeScreen: Navigating to SearchByLetter');
-              navigation.navigate('SearchByLetter');
-            }}
-          >
-            <Icon name="search" size={25} color="#FFFFFF" />
-            <Text style={styles.buttonText}> جستجو بر اساس حروف الفبا</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.iconWithText}>
-          {console.log('🌟 Rendering footer stars and poem')}
-          <View style={styles.starsRow}>
-            {[...Array(5)].map((_, index) => (
-              <Icon key={index} name="star" size={12} style={styles.starIcon} />
-            ))}
+            <TouchableOpacity
+              style={styles.gridButton}
+              onPress={() => {
+                console.log('HomeScreen: Navigating to SearchByLetter');
+                navigation.navigate('SearchByLetter');
+              }}
+            >
+              <Icon name="search" size={25} color="#FFFFFF" />
+              <Text style={styles.buttonText}> جستجو بر اساس حروف الفبا</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.footerText}>یادم از کِشتهٔ خویش آمد و هنگامِ درو</Text>
-        </View>
 
-        <View style={styles.footerImageWrapper}>
-          {console.log('🖼 Rendering footer image background')}
-          <ImageBackground
-            source={require('../assets/images/texture9.png')}
-            style={styles.footerImage}
-            resizeMode="cover"
-            onError={(e) => {
-              console.error('🔴 ImageBackground loading error:', e.nativeEvent.error);
-              if (__DEV__) {
-                Alert.alert('Image Error', 'Failed to load texture9.png');
-              }
-            }}
-          />
-        </View>
-      </ScrollView>
+          <View style={styles.iconWithText}>
+            {console.log('🌟 Rendering footer stars and poem')}
+            <View style={styles.starsRow}>
+              {[...Array(5)].map((_, index) => (
+                <Icon key={index} name="star" size={12} style={styles.starIcon} />
+              ))}
+            </View>
+            <Text style={styles.footerText}>یادم از کِشتهٔ خویش آمد و هنگامِ درو</Text>
+          </View>
+
+          <View style={styles.footerImageWrapper}>
+            {console.log('🖼 Rendering footer image background')}
+           <ImageBackground
+             source={require('../assets/images/texture9.png')}
+             style={styles.footerImage}
+             resizeMode="cover"
+             onError={(e) => {
+             console.error('🔴 ImageBackground loading error:', e?.nativeEvent?.error || 'unknown error');
+             // Optional: use fallback content
+              }}
+             onLoadEnd={() => {
+               console.log('🟢 ImageBackground load complete');
+               }}
+            >
+            {/* fallback in case the image fails */}
+            <View style={{ flex: 1 }} />
+          </ImageBackground>
+          </View>
+
+        </ScrollView>
+      </View>
     );
   } catch (err) {
-    console.error("🔴 Error rendering HomeScreen (caught by try-catch):", err);
+    console.error('🔴 Error rendering HomeScreen (caught by try-catch):', err);
     if (__DEV__) {
       Alert.alert(
         'Rendering Error',
-        'خطا در بارگذاری صفحه خانه. لطفاً برنامه را مجدداً راه‌اندازی کنید.' + '\nDetails: ' + err.message
+        'خطا در بارگذاری صفحه خانه. لطفاً برنامه را مجدداً راه‌اندازی کنید.\nDetails: ' + err.message
       );
     }
     return (

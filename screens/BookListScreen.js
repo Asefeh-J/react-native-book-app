@@ -1,5 +1,3 @@
-// Final safe version of BookListScreen with isMountedRef
-
 import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
@@ -24,34 +22,39 @@ export default function BookListScreen() {
   const isMountedRef = useRef(false);
 
   const loadBooks = useCallback(() => {
-    console.log('🔄 Starting to load books...');
+    console.log('🔄 BookListScreen: Starting to load books...');
     setRefreshing(true);
     setLoading(true);
 
     fetchAllBooks()
       .then((allBooks) => {
+        console.log('📦 BookListScreen: Raw book data:', JSON.stringify(allBooks));
+
         if (!isMountedRef.current) return;
         if (Array.isArray(allBooks)) {
-          console.log(`📚 Fetched ${allBooks.length} books`);
+          console.log(`📚 BookListScreen: Fetched ${allBooks.length} books`);
           setBooks(allBooks);
+
           const counts = {};
-          allBooks.forEach((book) => {
+          allBooks.forEach((book, i) => {
             const loc = String(book.location || 'نامشخص');
             counts[loc] = (counts[loc] || 0) + 1;
+
+            if (!book.id || !book.title) {
+              console.warn(`⚠️ BookListScreen: Book at index ${i} is missing id or title`, book);
+            }
           });
+
           setLocationCounts(counts);
         } else {
+          console.warn('⚠️ BookListScreen: fetchAllBooks did not return an array');
           setBooks([]);
           setLocationCounts({});
-          if (__DEV__) {
-            console.warn('⚠️ fetchAllBooks did not return an array');
-            Alert.alert('Data Format Error', 'fetchAllBooks did not return an array.');
-          }
         }
       })
       .catch((error) => {
         if (!isMountedRef.current) return;
-        console.error('❌ Error loading books:', error);
+        console.error('❌ BookListScreen: Error loading books:', error);
         Alert.alert('خطا', 'در بارگذاری کتاب‌ها مشکلی پیش آمده است.');
         setBooks([]);
         setLocationCounts({});
@@ -60,25 +63,25 @@ export default function BookListScreen() {
         if (!isMountedRef.current) return;
         setRefreshing(false);
         setLoading(false);
-        console.log('✅ Finished loading books');
+        console.log('✅ BookListScreen: Finished loading books');
       });
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      console.log('📚 BookListScreen focused');
+      console.log('📚 BookListScreen: focused');
       isMountedRef.current = true;
 
       const task = InteractionManager.runAfterInteractions(() => {
         if (isMountedRef.current) {
-          console.log('✅ BookListScreen interaction complete');
+          console.log('✅ BookListScreen: Interaction complete');
           setIsReady(true);
           loadBooks();
         }
       });
 
       return () => {
-        console.log('👋 BookListScreen unfocused');
+        console.log('👋 BookListScreen: unfocused, cleaning up...');
         isMountedRef.current = false;
         task.cancel();
         setIsReady(false);
@@ -89,7 +92,7 @@ export default function BookListScreen() {
   );
 
   const handleDelete = (id, title) => {
-    console.log(`🗑 Attempting to delete book: ${title} (ID: ${id})`);
+    console.log(`🗑 BookListScreen: Attempting to delete book: ${title} (ID: ${id})`);
     Alert.alert(
       'حذف کتاب',
       `آیا از حذف "${title}" مطمئن هستید؟`,
@@ -100,11 +103,11 @@ export default function BookListScreen() {
           onPress: () => {
             deleteBook(id)
               .then(() => {
-                console.log(`✅ Book deleted: ${title}`);
+                console.log(`✅ BookListScreen: Book deleted: ${title}`);
                 if (isMountedRef.current) loadBooks();
               })
               .catch((error) => {
-                console.error('❌ Error deleting book:', error);
+                console.error('❌ BookListScreen: Error deleting book:', error);
                 Alert.alert('خطا', 'مشکلی در حذف کتاب پیش آمد.');
               });
           },
@@ -115,7 +118,10 @@ export default function BookListScreen() {
   };
 
   const renderBookItem = ({ item }) => {
-    if (!item?.id) return null;
+    if (!item?.id) {
+      console.warn('⚠️ BookListScreen: Skipping book without valid ID:', item);
+      return null;
+    }
 
     return (
       <View style={styles.bookItem}>
@@ -144,7 +150,7 @@ export default function BookListScreen() {
   };
 
   if (!isReady) {
-    console.log('⏳ Waiting for interactions to finish before rendering BookListScreen');
+    console.log('⏳ BookListScreen: Waiting for interaction to finish...');
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#D4AF37" />
@@ -192,6 +198,7 @@ export default function BookListScreen() {
     </View>
   );
 }
+
 
 
 const styles = StyleSheet.create({

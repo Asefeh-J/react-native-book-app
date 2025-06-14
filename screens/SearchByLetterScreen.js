@@ -158,9 +158,11 @@ export default function SearchByLetterScreen() {
       ) : (
         <FlatList
           data={books}
-          keyExtractor={(item, index) =>
-            item?.id ? item.id.toString() : index.toString()
-          }
+          keyExtractor={(item, index) => {
+          const key = item?.id ? item.id.toString() : index.toString();
+          console.log(`🔑 Rendering book item with key: ${key}`);
+          return key;
+             }}
           renderItem={renderItem}
           ItemSeparatorComponent={renderSeparator}
           contentContainerStyle={styles.flatListContentContainer}

@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
-import React, { useEffect, useState, StrictMode } from 'react'; // Import StrictMode
-import { I18nManager, ActivityIndicator, View, Text, Alert } from 'react-native'; // Import Alert
+import React, { useEffect, useState, StrictMode } from 'react';
+import { I18nManager, ActivityIndicator, View, Text, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -11,7 +11,7 @@ import AddBookScreen from './screens/AddBookScreen';
 import BookListScreen from './screens/BookListScreen';
 import SearchByTextScreen from './screens/SearchByTextScreen';
 import SearchByLetterScreen from './screens/SearchByLetterScreen';
-import ErrorBoundary from './ErrorBoundary'; // Assuming you have this component
+import ErrorBoundary from './ErrorBoundary';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,7 +30,7 @@ export default function App() {
           I18nManager.forceRTL(true);
           await AsyncStorage.setItem('rtlSet', 'true');
           setRestartNeeded(true);
-          return; // Stop execution here if restart is needed
+          return;
         }
 
         console.log('App: RTL already set. Initializing database...');
@@ -40,16 +40,13 @@ export default function App() {
         console.log('App: Application is ready.');
       } catch (err) {
         console.error('App: Error during app initialization (RTL or Database):', err);
-        // Show a prominent alert if database initialization fails
         if (__DEV__) {
           Alert.alert(
             'Fatal Error',
-            `Application failed to initialize database or RTL. Please restart. \nDetails: ${err.message}`,
+            `Application failed to initialize database or RTL. Please restart.\nDetails: ${err.message}`,
             [{ text: 'OK' }]
           );
         }
-        // You might want to handle this more gracefully for production,
-        // perhaps showing a permanent error screen.
       }
     };
 
@@ -77,16 +74,20 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      {/* StrictMode applied here */}
-      <StrictMode> 
-        <NavigationContainer>
+      <StrictMode>
+        <NavigationContainer
+          onStateChange={(state) => {
+            const currentRoute = state.routes[state.index];
+            console.log(`🧭 Navigation state changed: ${currentRoute.name}`);
+          }}
+        >
           <Stack.Navigator
             initialRouteName="Home"
             screenOptions={{
               headerStyle: {
-                backgroundColor: '#C1BBD9', // Hardcoded: primaryDark
+                backgroundColor: '#C1BBD9',
               },
-              headerTintColor: '#3E3C64', // Hardcoded: textPrimary
+              headerTintColor: '#3E3C64',
               headerTitleStyle: {
                 fontWeight: 'bold',
                 fontSize: 20,
