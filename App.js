@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import React, { useEffect, useState, StrictMode } from 'react';
+import React, { useEffect, useState} from 'react';
 import { I18nManager, ActivityIndicator, View, Text, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
@@ -74,7 +74,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <StrictMode>
+      {/* <StrictMode> */}
         <NavigationContainer
           onStateChange={(state) => {
             const currentRoute = state.routes[state.index];
@@ -102,7 +102,7 @@ export default function App() {
             <Stack.Screen name="SearchByLetter" component={SearchByLetterScreen} options={{ title: 'جستجو بر اساس حرف' }} />
           </Stack.Navigator>
         </NavigationContainer>
-      </StrictMode>
+      {/* </StrictMode> */}
     </ErrorBoundary>
   );
 }
