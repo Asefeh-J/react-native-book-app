@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  ImageBackground,
+  ImageBackground, // Keep ImageBackground import as it might be used elsewhere
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -30,7 +30,9 @@ export default function HomeScreen({ navigation }) {
       return () => {
         console.log('👋 HomeScreen unfocused');
         isActive = false;
-        interactionTask.cancel();
+        if (interactionTask) { // Ensure cleanup if interactionTask is still pending
+          interactionTask.cancel();
+        }
         setIsReady(false);
       };
     }, [])
@@ -114,8 +116,10 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.footerText}>یادم از کِشتهٔ خویش آمد و هنگامِ درو</Text>
           </View>
 
+          {/* Commented out footerImageWrapper */}
+          {console.log('🖼 Rendering footer image background')}
+          {/*
           <View style={styles.footerImageWrapper}>
-            {console.log('🖼 Rendering footer image background')}
            <ImageBackground
              source={require('../assets/images/texture9.png')}
              style={styles.footerImage}
@@ -128,10 +132,10 @@ export default function HomeScreen({ navigation }) {
                console.log('🟢 ImageBackground load complete');
                }}
             >
-            {/* fallback in case the image fails */}
             <View style={{ flex: 1 }} />
           </ImageBackground>
           </View>
+          */}
 
         </ScrollView>
       </View>
