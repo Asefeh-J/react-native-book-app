@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  ImageBackground, // Keep ImageBackground import as it might be used elsewhere
+  ActivityIndicator,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -14,28 +14,31 @@ import { InteractionManager } from 'react-native';
 
 export default function HomeScreen({ navigation }) {
   const [isReady, setIsReady] = useState(false);
+  const isActiveRef = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
-      let isActive = true;
       console.log('🏠 HomeScreen focused');
+      isActiveRef.current = true;
+      console.log('⌛ HomeScreen waiting for interaction...');
+      console.log('🔍 HomeScreen: Current navigation state snapshot:', navigation.getState());
 
       const interactionTask = InteractionManager.runAfterInteractions(() => {
-        if (isActive) {
-          console.log('✅ Interaction complete, safe to render');
-          setIsReady(true);
+        if (isActiveRef.current) {
+          requestAnimationFrame(() => {
+            console.log('✅ Interaction complete, safe to render');
+            setIsReady(true);
+          });
         }
       });
 
       return () => {
         console.log('👋 HomeScreen unfocused');
-        isActive = false;
-        if (interactionTask) { // Ensure cleanup if interactionTask is still pending
-          interactionTask.cancel();
-        }
+        isActiveRef.current = false;
+        interactionTask?.cancel?.();
         setIsReady(false);
       };
-    }, [])
+    }, [navigation])
   );
 
   useEffect(() => {
@@ -46,8 +49,11 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   if (!isReady) {
-    console.log('⌛ HomeScreen waiting for interaction...');
-    return null;
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#5E548E" />
+      </View>
+    );
   }
 
   try {
@@ -116,27 +122,25 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.footerText}>یادم از کِشتهٔ خویش آمد و هنگامِ درو</Text>
           </View>
 
-          {/* Commented out footerImageWrapper */}
+          {/* Footer image is commented as requested */}
           {console.log('🖼 Rendering footer image background')}
           {/*
           <View style={styles.footerImageWrapper}>
-           <ImageBackground
-             source={require('../assets/images/texture9.png')}
-             style={styles.footerImage}
-             resizeMode="cover"
-             onError={(e) => {
-             console.error('🔴 ImageBackground loading error:', e?.nativeEvent?.error || 'unknown error');
-             // Optional: use fallback content
+            <ImageBackground
+              source={require('../assets/images/texture9.png')}
+              style={styles.footerImage}
+              resizeMode="cover"
+              onError={(e) => {
+                console.error('🔴 ImageBackground loading error:', e?.nativeEvent?.error || 'unknown error');
               }}
-             onLoadEnd={() => {
-               console.log('🟢 ImageBackground load complete');
-               }}
+              onLoadEnd={() => {
+                console.log('🟢 ImageBackground load complete');
+              }}
             >
-            <View style={{ flex: 1 }} />
-          </ImageBackground>
+              <View style={{ flex: 1 }} />
+            </ImageBackground>
           </View>
           */}
-
         </ScrollView>
       </View>
     );
@@ -149,12 +153,13 @@ export default function HomeScreen({ navigation }) {
       );
     }
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.loadingContainer}>
         <Text>خطا در بارگذاری صفحه خانه. لطفاً برنامه را مجدداً راه‌اندازی کنید.</Text>
       </View>
     );
   }
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -164,6 +169,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingBottom: 150,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F4F1EA',
   },
   title: {
     fontSize: 32,

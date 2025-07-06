@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -11,11 +11,26 @@ import SearchByLetterScreen from './screens/SearchByLetterScreen';
 const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
+  console.log('🔄 RootNavigator rendering'); // <-- ✅ Add this
+  useEffect(() => {
+    console.log('🔄 RootNavigator mounted');
+    return () => {
+      console.log('❌ RootNavigator unmounted');
+    };
+  }, []);
+
   return (
     <NavigationContainer
       onStateChange={(state) => {
-        const currentRoute = state.routes[state.index];
-        console.log(`🧭 Navigation state changed: ${currentRoute.name}`);
+        try {
+          const currentRoute = state.routes[state.index];
+          const stackNames = state.routes.map(r => r.name);
+          console.log(`🧭 Navigation state changed: ${currentRoute.name}`);
+          console.log('📦 Stack routes:', stackNames);
+          console.log('📦 Stack length:', state.routes.length);
+        } catch (error) {
+          console.error('❌ Navigation state error:', error);
+        }
       }}
     >
       <Stack.Navigator
@@ -27,7 +42,9 @@ export default function RootNavigator() {
           headerTitleAlign: 'center',
         }}
       >
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'صفحه اصلی' }} />
+        <Stack.Screen name="Home" options={{ title: 'صفحه اصلی' }}>
+          {(props) => <HomeScreen {...props} key={props.route.key} />}
+        </Stack.Screen>
         <Stack.Screen name="AddBook" component={AddBookScreen} options={{ title: 'افزودن کتاب' }} />
         <Stack.Screen name="BookList" component={BookListScreen} options={{ title: 'مشاهده لیست کتاب‌ها' }} />
         <Stack.Screen name="SearchByText" component={SearchByTextScreen} options={{ title: 'جستجو بر اساس متن' }} />

@@ -19,7 +19,8 @@ export default function BookListScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isReady, setIsReady] = useState(false);
-  const isMountedRef = useRef(false);
+  const isActiveRef = useRef(false);
+  const interactionRef = useRef(null);
 
   const loadBooks = useCallback(() => {
     console.log('🔄 BookListScreen: Starting to load books...');
@@ -28,9 +29,10 @@ export default function BookListScreen() {
 
     fetchAllBooks()
       .then((allBooks) => {
+        if (!isActiveRef.current) return;
+
         console.log('📦 BookListScreen: Raw book data:', JSON.stringify(allBooks));
 
-        if (!isMountedRef.current) return;
         if (Array.isArray(allBooks)) {
           console.log(`📚 BookListScreen: Fetched ${allBooks.length} books`);
           setBooks(allBooks);
@@ -53,14 +55,14 @@ export default function BookListScreen() {
         }
       })
       .catch((error) => {
-        if (!isMountedRef.current) return;
+        if (!isActiveRef.current) return;
         console.error('❌ BookListScreen: Error loading books:', error);
         Alert.alert('خطا', 'در بارگذاری کتاب‌ها مشکلی پیش آمده است.');
         setBooks([]);
         setLocationCounts({});
       })
       .finally(() => {
-        if (!isMountedRef.current) return;
+        if (!isActiveRef.current) return;
         setRefreshing(false);
         setLoading(false);
         console.log('✅ BookListScreen: Finished loading books');
@@ -70,20 +72,23 @@ export default function BookListScreen() {
   useFocusEffect(
     useCallback(() => {
       console.log('📚 BookListScreen: focused');
-      isMountedRef.current = true;
+      isActiveRef.current = true;
 
-      const task = InteractionManager.runAfterInteractions(() => {
-        if (isMountedRef.current) {
-          console.log('✅ BookListScreen: Interaction complete');
-          setIsReady(true);
-          loadBooks();
+      console.log('⏳ BookListScreen: Waiting for interaction to finish...');
+      interactionRef.current = InteractionManager.runAfterInteractions(() => {
+        if (isActiveRef.current) {
+          requestAnimationFrame(() => {
+            console.log('✅ BookListScreen: Interaction complete');
+            setIsReady(true);
+            loadBooks();
+          });
         }
       });
 
       return () => {
         console.log('👋 BookListScreen: unfocused, cleaning up...');
-        isMountedRef.current = false;
-        task.cancel();
+        isActiveRef.current = false;
+        interactionRef.current?.cancel?.();
         setIsReady(false);
         setBooks([]);
         setLocationCounts({});
@@ -103,8 +108,9 @@ export default function BookListScreen() {
           onPress: () => {
             deleteBook(id)
               .then(() => {
+                if (!isActiveRef.current) return;
                 console.log(`✅ BookListScreen: Book deleted: ${title}`);
-                if (isMountedRef.current) loadBooks();
+                loadBooks();
               })
               .catch((error) => {
                 console.error('❌ BookListScreen: Error deleting book:', error);
@@ -123,34 +129,38 @@ export default function BookListScreen() {
       return null;
     }
 
-    return (
-      <View style={styles.bookItem}>
-        <View style={styles.titleRow}>
-          <View style={styles.iconRowTitle}>
-            <Icon name="book" size={18} color="#5E548E" style={styles.icon} />
-            <Text style={styles.bookText}>{item.title}</Text>
+    try {
+      return (
+        <View style={styles.bookItem}>
+          <View style={styles.titleRow}>
+            <View style={styles.iconRowTitle}>
+              <Icon name="book" size={18} color="#5E548E" style={styles.icon} />
+              <Text style={styles.bookText}>{item.title}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDelete(item.id, item.title)}
+            >
+              <Icon name="trash" size={16} color="#FFFFFF" />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDelete(item.id, item.title)}
-          >
-            <Icon name="trash" size={16} color="#FFFFFF" />
-          </TouchableOpacity>
+          <View style={styles.iconRow}>
+            <Icon name="user" size={16} style={styles.icon} />
+            <Text style={styles.bookSubText}>{item.author}</Text>
+          </View>
+          <View style={styles.iconRow}>
+            <Icon name="map-marker" size={16} style={styles.icon} />
+            <Text style={styles.bookSubText}>{item.location}</Text>
+          </View>
         </View>
-        <View style={styles.iconRow}>
-          <Icon name="user" size={16} style={styles.icon} />
-          <Text style={styles.bookSubText}>{item.author}</Text>
-        </View>
-        <View style={styles.iconRow}>
-          <Icon name="map-marker" size={16} style={styles.icon} />
-          <Text style={styles.bookSubText}>{item.location}</Text>
-        </View>
-      </View>
-    );
+      );
+    } catch (err) {
+      console.error('❌ Error rendering book item:', err);
+      return null;
+    }
   };
 
   if (!isReady) {
-    console.log('⏳ BookListScreen: Waiting for interaction to finish...');
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#D4AF37" />
@@ -198,6 +208,8 @@ export default function BookListScreen() {
     </View>
   );
 }
+
+
 
 
 
