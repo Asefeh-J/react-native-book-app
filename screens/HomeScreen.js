@@ -11,6 +11,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useFocusEffect } from '@react-navigation/native';
 import { InteractionManager } from 'react-native';
+import ErrorBoundary from '../ErrorBoundary'; // ✅ wrap JSX for render issues
 
 export default function HomeScreen({ navigation }) {
   const [isReady, setIsReady] = useState(false);
@@ -49,6 +50,7 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   if (!isReady) {
+    console.log('⏳ HomeScreen not ready yet, showing loader');
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#5E548E" />
@@ -59,90 +61,87 @@ export default function HomeScreen({ navigation }) {
   try {
     console.log('HomeScreen: Attempting to return JSX');
     return (
-      <View style={{ flex: 1, backgroundColor: '#F4F1EA' }}>
-        <ScrollView contentContainerStyle={styles.container}>
-          {console.log('🧱 Rendering main container')}
-          <Text style={styles.title}>کتابخانه </Text>
+      <ErrorBoundary>
+        <View style={{ flex: 1, backgroundColor: '#F4F1EA' }}>
+          <ScrollView contentContainerStyle={styles.container}>
+            <Text style={styles.title}>کتابخانه </Text>
 
-          <View style={styles.gridContainer}>
-            {console.log('🔲 Rendering grid buttons')}
+            <View style={styles.gridContainer}>
+              <TouchableOpacity
+                style={styles.gridButton}
+                onPress={() => {
+                  console.log('HomeScreen: Navigating to AddBook');
+                  navigation.navigate('AddBook');
+                }}
+              >
+                <Icon name="plus" size={25} color="#FFFFFF" />
+                <Text style={styles.buttonText}> افزودن کتاب جدید</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.gridButton}
-              onPress={() => {
-                console.log('HomeScreen: Navigating to AddBook');
-                navigation.navigate('AddBook');
-              }}
-            >
-              <Icon name="plus" size={25} color="#FFFFFF" />
-              <Text style={styles.buttonText}> افزودن کتاب جدید</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.gridButton}
+                onPress={() => {
+                  console.log('HomeScreen: Navigating to BookList');
+                  navigation.navigate('BookList');
+                }}
+              >
+                <Icon name="book" size={25} color="#FFFFFF" />
+                <Text style={styles.buttonText}> مشاهده همه کتاب‌ها</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.gridButton}
-              onPress={() => {
-                console.log('HomeScreen: Navigating to BookList');
-                navigation.navigate('BookList');
-              }}
-            >
-              <Icon name="book" size={25} color="#FFFFFF" />
-              <Text style={styles.buttonText}> مشاهده همه کتاب‌ها</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.gridButton}
+                onPress={() => {
+                  console.log('HomeScreen: Navigating to SearchByText');
+                  navigation.navigate('SearchByText');
+                }}
+              >
+                <Icon name="search" size={25} color="#FFFFFF" />
+                <Text style={styles.buttonText}> جستجو بر اساس عنوان، نویسنده یا مکان</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.gridButton}
-              onPress={() => {
-                console.log('HomeScreen: Navigating to SearchByText');
-                navigation.navigate('SearchByText');
-              }}
-            >
-              <Icon name="search" size={25} color="#FFFFFF" />
-              <Text style={styles.buttonText}> جستجو بر اساس عنوان، نویسنده یا مکان</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.gridButton}
-              onPress={() => {
-                console.log('HomeScreen: Navigating to SearchByLetter');
-                navigation.navigate('SearchByLetter');
-              }}
-            >
-              <Icon name="search" size={25} color="#FFFFFF" />
-              <Text style={styles.buttonText}> جستجو بر اساس حروف الفبا</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.iconWithText}>
-            {console.log('🌟 Rendering footer stars and poem')}
-            <View style={styles.starsRow}>
-              {[...Array(5)].map((_, index) => (
-                <Icon key={index} name="star" size={12} style={styles.starIcon} />
-              ))}
+              <TouchableOpacity
+                style={styles.gridButton}
+                onPress={() => {
+                  console.log('HomeScreen: Navigating to SearchByLetter');
+                  navigation.navigate('SearchByLetter');
+                }}
+              >
+                <Icon name="search" size={25} color="#FFFFFF" />
+                <Text style={styles.buttonText}> جستجو بر اساس حروف الفبا</Text>
+              </TouchableOpacity>
             </View>
-            <Text style={styles.footerText}>یادم از کِشتهٔ خویش آمد و هنگامِ درو</Text>
-          </View>
 
-          {/* Footer image is commented as requested */}
-          {console.log('🖼 Rendering footer image background')}
-          {/*
-          <View style={styles.footerImageWrapper}>
-            <ImageBackground
-              source={require('../assets/images/texture9.png')}
-              style={styles.footerImage}
-              resizeMode="cover"
-              onError={(e) => {
-                console.error('🔴 ImageBackground loading error:', e?.nativeEvent?.error || 'unknown error');
-              }}
-              onLoadEnd={() => {
-                console.log('🟢 ImageBackground load complete');
-              }}
-            >
-              <View style={{ flex: 1 }} />
-            </ImageBackground>
-          </View>
-          */}
-        </ScrollView>
-      </View>
+            <View style={styles.iconWithText}>
+              <View style={styles.starsRow}>
+                {[...Array(5)].map((_, index) => (
+                  <Icon key={index} name="star" size={12} style={styles.starIcon} />
+                ))}
+              </View>
+              <Text style={styles.footerText}>یادم از کِشتهٔ خویش آمد و هنگامِ درو</Text>
+            </View>
+
+            {/* Footer image is still commented */}
+            {/*
+            <View style={styles.footerImageWrapper}>
+              <ImageBackground
+                source={require('../assets/images/texture9.png')}
+                style={styles.footerImage}
+                resizeMode="cover"
+                onError={(e) => {
+                  console.error('🔴 ImageBackground loading error:', e?.nativeEvent?.error || 'unknown error');
+                }}
+                onLoadEnd={() => {
+                  console.log('🟢 ImageBackground load complete');
+                }}
+              >
+                <View style={{ flex: 1 }} />
+              </ImageBackground>
+            </View>
+            */}
+          </ScrollView>
+        </View>
+      </ErrorBoundary>
     );
   } catch (err) {
     console.error('🔴 Error rendering HomeScreen (caught by try-catch):', err);
@@ -159,6 +158,7 @@ export default function HomeScreen({ navigation }) {
     );
   }
 }
+
 
 
 const styles = StyleSheet.create({
