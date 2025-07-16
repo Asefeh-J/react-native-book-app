@@ -27,7 +27,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.asefeh.mylibraryapp"
+      "package": "com.asefeh.mylibraryapp",
+      "supportsRtl": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
