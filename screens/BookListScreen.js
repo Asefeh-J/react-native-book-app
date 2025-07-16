@@ -176,7 +176,7 @@ export default function BookListScreen() {
           <Text style={styles.header}>لیست کتاب‌ها</Text>
         </View>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => {
             console.log('🔙 BookListScreen: Going back to Home using popToTop');
             navigation.popToTop();
@@ -189,7 +189,7 @@ export default function BookListScreen() {
           }}
         >
           <Text style={{ color: 'white', textAlign: 'center' }}>بازگشت به خانه</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {loading ? (
           <ActivityIndicator size="large" color="#D4AF37" style={{ marginTop: 50 }} />
