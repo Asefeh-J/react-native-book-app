@@ -16,7 +16,6 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 export default function BookListScreen() {
   const navigation = useNavigation();
   const [books, setBooks] = useState([]);
-  const [locationCounts, setLocationCounts] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isReady, setIsReady] = useState(false);
@@ -37,22 +36,9 @@ export default function BookListScreen() {
         if (Array.isArray(allBooks)) {
           console.log(`📚 BookListScreen: Fetched ${allBooks.length} books`);
           setBooks(allBooks);
-
-          const counts = {};
-          allBooks.forEach((book, i) => {
-            const loc = String(book.location || 'نامشخص');
-            counts[loc] = (counts[loc] || 0) + 1;
-
-            if (!book.id || !book.title) {
-              console.warn(`⚠️ BookListScreen: Book at index ${i} is missing id or title`, book);
-            }
-          });
-
-          setLocationCounts(counts);
         } else {
           console.warn('⚠️ BookListScreen: fetchAllBooks did not return an array');
           setBooks([]);
-          setLocationCounts({});
         }
       })
       .catch((error) => {
@@ -60,7 +46,6 @@ export default function BookListScreen() {
         console.error('❌ BookListScreen: Error loading books:', error);
         Alert.alert('خطا', 'در بارگذاری کتاب‌ها مشکلی پیش آمده است.');
         setBooks([]);
-        setLocationCounts({});
       })
       .finally(() => {
         if (!isActiveRef.current) return;
@@ -92,7 +77,6 @@ export default function BookListScreen() {
         interactionRef.current?.cancel?.();
         setIsReady(false);
         setBooks([]);
-        setLocationCounts({});
       };
     }, [loadBooks])
   );
@@ -176,54 +160,27 @@ export default function BookListScreen() {
           <Text style={styles.header}>لیست کتاب‌ها</Text>
         </View>
 
-        {/* <TouchableOpacity
-          onPress={() => {
-            console.log('🔙 BookListScreen: Going back to Home using popToTop');
-            navigation.popToTop();
-          }}
-          style={{
-            backgroundColor: '#6C5B7B',
-            padding: 10,
-            marginBottom: 10,
-            borderRadius: 8,
-          }}
-        >
-          <Text style={{ color: 'white', textAlign: 'center' }}>بازگشت به خانه</Text>
-        </TouchableOpacity> */}
+        <View style={{ marginBottom: 20 }}>
+          <Text style={styles.totalCountText}>
+            مجموع کتاب‌ها: {books.length}
+          </Text>
+        </View>
 
         {loading ? (
           <ActivityIndicator size="large" color="#D4AF37" style={{ marginTop: 50 }} />
         ) : books.length === 0 ? (
           <Text style={styles.emptyText}>هیچ کتابی ثبت نشده است.</Text>
         ) : (
-          <>
-            <View style={{ marginBottom: 20 }}>
-              {Object.entries(locationCounts).map(([location, count]) => (
-                <Text key={location} style={styles.locationCountText}>
-                  {location}: {count} کتاب
-                </Text>
-              ))}
-            </View>
-            <FlatList
-              data={books}
-              keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
-              renderItem={renderBookItem}
-              onRefresh={loadBooks}
-              refreshing={refreshing}
-              showsVerticalScrollIndicator={true}
-              contentContainerStyle={styles.listContainer}
-              // ItemSeparatorComponent={() => (
-              //   <View style={styles.starsRow}>
-              //     {[...Array(5)].map((_, index) => (
-              //       <Icon key={index} name="star" size={12} style={styles.starIcon} />
-              //     ))}
-              //   </View>
-              // )}
-              ItemSeparatorComponent={() => (
-                <View style={{ height: 10 }} /> // just a simple visual space
-              )}
-            />
-          </>
+          <FlatList
+            data={books}
+            keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
+            renderItem={renderBookItem}
+            onRefresh={loadBooks}
+            refreshing={refreshing}
+            showsVerticalScrollIndicator={true}
+            contentContainerStyle={styles.listContainer}
+            ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+          />
         )}
       </View>
     );
@@ -319,16 +276,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 50,
   },
-  starsRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: 10,
-  },
-  starIcon: {
-    marginHorizontal: 2,
-    color: '#D4AF37',
-  },
-  locationCountText: {
+  totalCountText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#3E3C64',
