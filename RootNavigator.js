@@ -7,6 +7,7 @@ import AddBookScreen from './screens/AddBookScreen';
 import BookListScreen from './screens/BookListScreen';
 import SearchByTextScreen from './screens/SearchByTextScreen';
 import SearchByLetterScreen from './screens/SearchByLetterScreen';
+import EditBookScreen from './screens/EditBookScreen'; // Import the new screen
 
 const Stack = createNativeStackNavigator();
 
@@ -49,6 +50,7 @@ export default function RootNavigator() {
         <Stack.Screen name="BookList" component={BookListScreen} options={{ title: 'مشاهده لیست کتاب‌ها' }} />
         <Stack.Screen name="SearchByText" component={SearchByTextScreen} options={{ title: 'جستجو بر اساس متن' }} />
         <Stack.Screen name="SearchByLetter" component={SearchByLetterScreen} options={{ title: 'جستجو بر اساس حرف' }} />
+        <Stack.Screen name="EditBook" component={EditBookScreen} options={{ title: 'ویرایش کتاب' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

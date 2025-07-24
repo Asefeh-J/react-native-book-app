@@ -9,7 +9,6 @@ import {
   Alert,
   Keyboard,
   ActivityIndicator,
-  InteractionManager,
 } from 'react-native';
 import {
   searchByTitle,
@@ -18,7 +17,8 @@ import {
   deleteBook,
 } from '../database/Database';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { InteractionManager } from 'react-native';
 
 export default function SearchByTextScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,12 +26,16 @@ export default function SearchByTextScreen() {
   const [isReady, setIsReady] = useState(false);
   const [searching, setSearching] = useState(false);
   const isMountedRef = useRef(false);
+  const navigation = useNavigation();
 
   useFocusEffect(
     useCallback(() => {
       isMountedRef.current = true;
+
       const interaction = InteractionManager.runAfterInteractions(() => {
-        if (isMountedRef.current) setIsReady(true);
+        if (isMountedRef.current) {
+          setIsReady(true);
+        }
       });
 
       return () => {
@@ -60,6 +64,7 @@ export default function SearchByTextScreen() {
 
     try {
       setSearching(true);
+
       const [byTitle, byAuthor, byLocation] = await Promise.all([
         searchByTitle(searchQuery),
         searchByAuthor(searchQuery),
@@ -70,9 +75,11 @@ export default function SearchByTextScreen() {
 
       const all = [...byTitle, ...byAuthor, ...byLocation];
       const unique = Array.from(new Map(all.map((item) => [item.id, item])).values());
+
       setResults(unique);
     } catch (error) {
       if (!isMountedRef.current) return;
+      console.error('❌ Error during search:', error);
       Alert.alert('خطا', 'مشکلی در جستجو پیش آمد.');
       setResults([]);
     } finally {
@@ -95,6 +102,7 @@ export default function SearchByTextScreen() {
                 setResults((prev) => prev.filter((book) => book.id !== id));
               }
             } catch (error) {
+              console.error('❌ Error deleting book:', error);
               Alert.alert('خطا', 'مشکلی در حذف کتاب پیش آمد.');
             }
           },
@@ -104,6 +112,10 @@ export default function SearchByTextScreen() {
     );
   };
 
+  const handleEdit = (book) => {
+    navigation.navigate('EditBook', { book });
+  };
+
   const renderItem = ({ item }) => {
     if (!item || !item.id || !item.title) return null;
 
@@ -111,17 +123,9 @@ export default function SearchByTextScreen() {
       <View style={styles.bookItem}>
         <View style={styles.titleRow}>
           <View style={styles.titleContent}>
-            <View style={styles.titleTextWrapper}>
-              <Icon name="book" size={16} color="#5E548E" style={styles.icon} />
-              <Text style={styles.bookText}>{item.title}</Text>
-            </View>
+            <Icon name="book" size={16} color="#5E548E" style={styles.icon} />
+            <Text style={styles.bookText}>{item.title}</Text>
           </View>
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDelete(item.id, item.title)}
-          >
-            <Icon name="trash" size={16} color="#FFFFFF" />
-          </TouchableOpacity>
         </View>
 
         <View style={styles.iconTextRow}>
@@ -132,6 +136,22 @@ export default function SearchByTextScreen() {
         <View style={styles.iconTextRow}>
           <Icon name="map-marker" size={14} color="#5E548E" style={styles.icon} />
           <Text style={styles.bookSubText}>{item.location}</Text>
+        </View>
+
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => handleEdit(item)}
+          >
+            <Icon name="pencil" size={16} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDelete(item.id, item.title)}
+          >
+            <Icon name="trash" size={16} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -251,16 +271,13 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   titleContent: {
-    flex: 1,
-    marginEnd: 10,
-  },
-  titleTextWrapper: {
     flexDirection: 'row-reverse',
-    flexWrap: 'wrap',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 1,
   },
   iconTextRow: {
     flexDirection: 'row-reverse',
@@ -277,8 +294,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#3E3C64',
     textAlign: 'right',
-    flex: 1,
     flexShrink: 1,
+    flexWrap: 'wrap',
   },
   bookSubText: {
     fontSize: 18,
@@ -291,6 +308,18 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 8,
     marginLeft: 5,
+  },
+  editButton: {
+    backgroundColor: '#6C5B7B',
+    padding: 8,
+    borderRadius: 8,
+    marginLeft: 5,
+  },
+  buttonRow: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'flex-end',
+    marginTop: 10,
+    gap: 10,
   },
   noResults: {
     fontSize: 18,
