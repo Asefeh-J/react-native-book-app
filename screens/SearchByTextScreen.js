@@ -9,6 +9,7 @@ import {
   Alert,
   Keyboard,
   ActivityIndicator,
+  InteractionManager,
 } from 'react-native';
 import {
   searchByTitle,
@@ -18,7 +19,6 @@ import {
 } from '../database/Database';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useFocusEffect } from '@react-navigation/native';
-import { InteractionManager } from 'react-native';
 
 export default function SearchByTextScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,18 +29,12 @@ export default function SearchByTextScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      console.log('🔍 SearchByTextScreen focused');
       isMountedRef.current = true;
-
       const interaction = InteractionManager.runAfterInteractions(() => {
-        if (isMountedRef.current) {
-          setIsReady(true);
-          console.log('✅ SearchByTextScreen interaction complete');
-        }
+        if (isMountedRef.current) setIsReady(true);
       });
 
       return () => {
-        console.log('⬅️ SearchByTextScreen unfocused, clearing results');
         isMountedRef.current = false;
         setSearchQuery('');
         setResults([]);
@@ -65,9 +59,7 @@ export default function SearchByTextScreen() {
     }
 
     try {
-      console.log(`🔎 Starting search for "${searchQuery}"...`);
       setSearching(true);
-
       const [byTitle, byAuthor, byLocation] = await Promise.all([
         searchByTitle(searchQuery),
         searchByAuthor(searchQuery),
@@ -78,12 +70,9 @@ export default function SearchByTextScreen() {
 
       const all = [...byTitle, ...byAuthor, ...byLocation];
       const unique = Array.from(new Map(all.map((item) => [item.id, item])).values());
-
-      console.log(`✅ Found ${unique.length} unique results`);
       setResults(unique);
     } catch (error) {
       if (!isMountedRef.current) return;
-      console.error('❌ Error during search:', error);
       Alert.alert('خطا', 'مشکلی در جستجو پیش آمد.');
       setResults([]);
     } finally {
@@ -106,7 +95,6 @@ export default function SearchByTextScreen() {
                 setResults((prev) => prev.filter((book) => book.id !== id));
               }
             } catch (error) {
-              console.error('❌ Error deleting book:', error);
               Alert.alert('خطا', 'مشکلی در حذف کتاب پیش آمد.');
             }
           },
@@ -123,8 +111,10 @@ export default function SearchByTextScreen() {
       <View style={styles.bookItem}>
         <View style={styles.titleRow}>
           <View style={styles.titleContent}>
-            <Icon name="book" size={16} color="#5E548E" style={styles.icon} />
-            <Text style={styles.bookText}>{item.title}</Text>
+            <View style={styles.titleTextWrapper}>
+              <Icon name="book" size={16} color="#5E548E" style={styles.icon} />
+              <Text style={styles.bookText}>{item.title}</Text>
+            </View>
           </View>
           <TouchableOpacity
             style={styles.deleteButton}
@@ -196,7 +186,6 @@ export default function SearchByTextScreen() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -262,12 +251,16 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   titleContent: {
+    flex: 1,
+    marginEnd: 10,
+  },
+  titleTextWrapper: {
     flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 8,
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
   },
   iconTextRow: {
     flexDirection: 'row-reverse',
@@ -284,6 +277,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#3E3C64',
     textAlign: 'right',
+    flex: 1,
     flexShrink: 1,
   },
   bookSubText: {
