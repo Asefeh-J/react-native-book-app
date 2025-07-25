@@ -7,13 +7,15 @@ import {
   ActivityIndicator,
   InteractionManager,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fetchAllBooks } from '../database/Database';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
+import { importBooksFromJSON } from '../utils/importBooks';
+import {exportBooksToDownloads} from '../utils/exportBooks';
 
 export default function BookListScreen() {
-  const navigation = useNavigation();
   const [books, setBooks] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -108,9 +110,17 @@ export default function BookListScreen() {
       </View>
 
       <View style={{ marginBottom: 20 }}>
-        <Text style={styles.totalCountText}>
-          مجموع کتاب‌ها: {books.length}
-        </Text>
+        <Text style={styles.totalCountText}>مجموع کتاب‌ها: {books.length}</Text>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.exportButton} onPress={exportBooksToDownloads}>
+          <Text style={styles.buttonText}>ذخیره کتاب ها</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.importButton} onPress={importBooksFromJSON}>
+          <Text style={styles.buttonText}>بازیابی کتاب ها</Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -212,5 +222,27 @@ const styles = StyleSheet.create({
     color: '#3E3C64',
     textAlign: 'right',
     marginBottom: 4,
+  },
+  buttonContainer: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  exportButton: {
+    backgroundColor: '#5E548E',
+    padding: 10,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+  },
+  importButton: {
+    backgroundColor: '#5E548E',
+    padding: 10,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
