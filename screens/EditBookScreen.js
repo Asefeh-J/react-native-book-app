@@ -47,7 +47,6 @@ export default function EditBookScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.header}>ویرایش اطلاعات کتاب</Text>
 
-        <Text style={styles.label}>عنوان:</Text>
         <TextInput
           style={styles.input}
           value={title}
@@ -55,7 +54,6 @@ export default function EditBookScreen() {
           placeholder="عنوان کتاب"
         />
 
-        <Text style={styles.label}>نویسنده:</Text>
         <TextInput
           style={styles.input}
           value={author}
@@ -63,7 +61,6 @@ export default function EditBookScreen() {
           placeholder="نویسنده کتاب"
         />
 
-        <Text style={styles.label}>محل:</Text>
         <TextInput
           style={styles.input}
           value={location}
@@ -107,7 +104,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     marginBottom: 20,
-    fontSize: 18,
+    fontSize: 20,
+    fontWeight: 'bold',
     textAlign: 'right',
     color: '#3E3C64',
   },
