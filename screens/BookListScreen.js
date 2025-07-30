@@ -115,11 +115,11 @@ export default function BookListScreen() {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.exportButton} onPress={exportBooksToDownloads}>
-          <Text style={styles.buttonText}>ذخیره کتاب ها</Text>
+          <Text style={styles.buttonText}>ذخیره داده ها</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.importButton} onPress={importBooksFromJSON}>
-          <Text style={styles.buttonText}>بازیابی کتاب ها</Text>
+          <Text style={styles.buttonText}> انتقال داده ها</Text>
         </TouchableOpacity>
       </View>
 

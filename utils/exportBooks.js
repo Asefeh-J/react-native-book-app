@@ -1,5 +1,5 @@
 import * as FileSystem from 'expo-file-system';
-import * as MediaLibrary from 'expo-media-library';
+import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
 
 export async function exportBooksToDownloads(bookArray) {
@@ -7,23 +7,18 @@ export async function exportBooksToDownloads(bookArray) {
   const fileUri = FileSystem.documentDirectory + 'books_export.json';
 
   try {
-    // Write JSON to temporary file
+    // Write JSON to app sandbox (safe location)
     await FileSystem.writeAsStringAsync(fileUri, json);
+    console.log('✅ فایل با موفقیت در فضای امن برنامه ذخیره شد:', fileUri);
 
-    // Ask permission
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('اجازه دسترسی رد شد', 'برای ذخیره فایل نیاز به اجازه دارید.');
-      return;
+    // Try to share the file with user
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(fileUri);
+    } else {
+      Alert.alert('✅ موفقیت', 'فایل JSON در فضای برنامه ذخیره شد اما اشتراک‌گذاری در این دستگاه پشتیبانی نمی‌شود.');
     }
-
-    // Save to Downloads
-    const asset = await MediaLibrary.createAssetAsync(fileUri);
-    await MediaLibrary.createAlbumAsync('Download', asset, false);
-
-    Alert.alert('✅ موفقیت', 'فایل JSON با موفقیت در پوشه Downloads ذخیره شد.');
   } catch (error) {
     console.error('❌ خطا در خروجی گرفتن:', error);
-    Alert.alert('خطا', 'ذخیره فایل با مشکل مواجه شد.');
+    Alert.alert('خطا', 'در ذخیره یا اشتراک‌گذاری فایل مشکلی پیش آمد.');
   }
 }
