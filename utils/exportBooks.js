@@ -3,19 +3,31 @@ import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
 
 export async function exportBooksToDownloads(bookArray) {
+  console.log('📦 exportBooksToDownloads started');
+
+  if (!Array.isArray(bookArray) || bookArray.length === 0) {
+    Alert.alert('ℹ️ اطلاعات خالی', 'هیچ کتابی برای خروجی گرفتن وجود ندارد.');
+    return;
+  }
+
   const json = JSON.stringify(bookArray, null, 2);
-  const fileUri = FileSystem.documentDirectory + 'books_export.json';
+  const fileUri = FileSystem.documentDirectory + 'books_export.json'; // private app folder
 
   try {
-    // Write JSON to app sandbox (safe location)
+    // Write file to app sandbox
     await FileSystem.writeAsStringAsync(fileUri, json);
-    console.log('✅ فایل با موفقیت در فضای امن برنامه ذخیره شد:', fileUri);
+    console.log('✅ فایل ذخیره شد در:', fileUri);
 
-    // Try to share the file with user
+    // If sharing is available, open share sheet
     if (await Sharing.isAvailableAsync()) {
+      console.log('📤 شروع اشتراک‌گذاری...');
       await Sharing.shareAsync(fileUri);
     } else {
-      Alert.alert('✅ موفقیت', 'فایل JSON در فضای برنامه ذخیره شد اما اشتراک‌گذاری در این دستگاه پشتیبانی نمی‌شود.');
+      console.log('⚠️ Sharing API not available');
+      Alert.alert(
+        '✅ موفقیت',
+        'فایل JSON در فضای داخلی برنامه ذخیره شد. می‌توانید هنگام انتقال داده، آن را انتخاب کنید.'
+      );
     }
   } catch (error) {
     console.error('❌ خطا در خروجی گرفتن:', error);

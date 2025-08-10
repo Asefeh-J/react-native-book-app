@@ -114,14 +114,27 @@ export default function BookListScreen() {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.exportButton} onPress={exportBooksToDownloads}>
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={() => {
+            console.log('📤 ذخیره داده‌ها button pressed');
+            exportBooksToDownloads(books); // pass book list here
+          }}
+        >
           <Text style={styles.buttonText}>ذخیره داده ها</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.importButton} onPress={importBooksFromJSON}>
+        <TouchableOpacity
+          style={styles.importButton}
+          onPress={() => {
+            console.log('📥 انتقال داده‌ها button pressed');
+            importBooksFromJSON();
+          }}
+        >
           <Text style={styles.buttonText}> انتقال داده ها</Text>
         </TouchableOpacity>
       </View>
+
 
       {loading ? (
         <ActivityIndicator size="large" color="#D4AF37" style={{ marginTop: 50 }} />
