@@ -20,11 +20,18 @@ export async function importBooksFromJSON() {
 
     let fileUri = result.uri;
 
-    // Handle Google Drive / Gmail (content:// URIs) on Android
+    // Fix: handle Gmail/Drive "content://" URIs properly
     if (Platform.OS === 'android' && fileUri.startsWith('content://')) {
-      const base64 = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
       const destUri = FileSystem.cacheDirectory + 'import_books.json';
-      await FileSystem.writeAsStringAsync(destUri, base64, { encoding: FileSystem.EncodingType.Base64 });
+      await FileSystem.StorageAccessFramework.readAsStringAsync(fileUri)
+        .then(async (content) => {
+          await FileSystem.writeAsStringAsync(destUri, content);
+        })
+        .catch((err) => {
+          console.error('❌ SAF read failed:', err);
+          Alert.alert('خطا', 'خواندن فایل از حافظه ناموفق بود.');
+          return;
+        });
       fileUri = destUri;
     }
 
@@ -43,11 +50,7 @@ export async function importBooksFromJSON() {
       'تأیید انتقال',
       `آیا مایلید ${books.length} کتاب را وارد کنید؟`,
       [
-        {
-          text: 'لغو',
-          style: 'cancel',
-          onPress: () => console.log('🚫 Import cancelled'),
-        },
+        { text: 'لغو', style: 'cancel', onPress: () => console.log('🚫 Import cancelled') },
         {
           text: 'بله',
           onPress: async () => {
