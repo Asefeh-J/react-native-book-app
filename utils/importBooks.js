@@ -2,7 +2,7 @@
 import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
 import { insertBook } from '../database/Database';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 export async function importBooksFromJSON() {
   try {
@@ -17,17 +17,30 @@ export async function importBooksFromJSON() {
     }
 
     console.log('📂 Selected file URI:', result.uri);
+    let fileUri = result.uri;
 
-    // Always copy the picked file into app sandbox
-    const destUri = FileSystem.cacheDirectory + 'import_books.json';
-    await FileSystem.copyAsync({
-      from: result.uri,
-      to: destUri,
-    });
+    // 📦 Fix: handle Gmail/Drive/Downloads "content://" URIs on Android
+    if (Platform.OS === 'android' && fileUri.startsWith('content://')) {
+      try {
+        const base64 = await FileSystem.readAsStringAsync(fileUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        const destUri = FileSystem.cacheDirectory + 'import_books.json';
+        await FileSystem.writeAsStringAsync(destUri, base64, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        fileUri = destUri;
+        console.log('✅ Copied content:// file into sandbox:', destUri);
+      } catch (err) {
+        console.error('❌ Failed to read content:// URI:', err);
+        Alert.alert('خطا', 'خواندن فایل انتخابی ممکن نیست.');
+        return;
+      }
+    }
 
-    // Now read from sandbox
-    const jsonString = await FileSystem.readAsStringAsync(destUri);
-    console.log('📖 Raw JSON string:', jsonString.substring(0, 200)); // debug first 200 chars
+    // 🧠 Now read JSON content
+    const jsonString = await FileSystem.readAsStringAsync(fileUri);
+    console.log('📖 Raw JSON string (first 200 chars):', jsonString.substring(0, 200));
 
     const books = JSON.parse(jsonString);
     console.log(`📚 Found ${books.length} books in file`);
