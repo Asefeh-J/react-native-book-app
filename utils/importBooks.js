@@ -1,4 +1,3 @@
-// utils/importBooks.js
 import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
 import { insertBook } from '../database/Database';
@@ -19,27 +18,30 @@ export async function importBooksFromJSON() {
     console.log('📂 Selected file URI:', result.uri);
     let fileUri = result.uri;
 
-    // 📦 Fix: handle Gmail/Drive/Downloads "content://" URIs on Android
-    if (Platform.OS === 'android' && fileUri.startsWith('content://')) {
-      try {
+    // 📦 Copy file into app sandbox so we can safely read it
+    const destUri = FileSystem.cacheDirectory + 'import_books.json';
+    try {
+      await FileSystem.copyAsync({ from: fileUri, to: destUri });
+      console.log('✅ File copied to sandbox:', destUri);
+    } catch (err) {
+      console.error('❌ Copy failed (trying content:// fallback):', err);
+      if (Platform.OS === 'android' && fileUri.startsWith('content://')) {
+        // Fallback: use base64 read/write
         const base64 = await FileSystem.readAsStringAsync(fileUri, {
           encoding: FileSystem.EncodingType.Base64,
         });
-        const destUri = FileSystem.cacheDirectory + 'import_books.json';
         await FileSystem.writeAsStringAsync(destUri, base64, {
           encoding: FileSystem.EncodingType.Base64,
         });
-        fileUri = destUri;
-        console.log('✅ Copied content:// file into sandbox:', destUri);
-      } catch (err) {
-        console.error('❌ Failed to read content:// URI:', err);
-        Alert.alert('خطا', 'خواندن فایل انتخابی ممکن نیست.');
+        console.log('✅ Copied via base64 fallback:', destUri);
+      } else {
+        Alert.alert('خطا', 'فایل انتخابی قابل خواندن نیست.');
         return;
       }
     }
 
-    // 🧠 Now read JSON content
-    const jsonString = await FileSystem.readAsStringAsync(fileUri);
+    // 🧠 Read JSON from the safe local copy
+    const jsonString = await FileSystem.readAsStringAsync(destUri);
     console.log('📖 Raw JSON string (first 200 chars):', jsonString.substring(0, 200));
 
     const books = JSON.parse(jsonString);

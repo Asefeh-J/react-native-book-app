@@ -7,11 +7,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
 
-    "newArchEnabled": false, 
+    "newArchEnabled": false,
 
     "experiments": {
       "bridgeless": false,
-      "turboModules": false 
+      "turboModules": false
     },
 
     "splash": {
@@ -19,37 +19,48 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "ios": {
       "supportsTablet": true
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff",
-        "permissions": ["READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
+        "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
       "package": "com.asefeh.mylibraryapp",
       "supportsRtl": true
     },
+
     "web": {
       "favicon": "./assets/favicon.png"
     },
+
     "plugins": [
       "expo-sqlite",
-      "expo-media-library" 
+      "expo-media-library"
     ],
+
     "extra": {
       "eas": {
         "projectId": "f822633a-553e-44be-9ab2-b6aaca18097e"
       }
     },
+
     "runtimeVersion": {
       "policy": "appVersion"
     },
+
     "updates": {
       "enabled": false,
       "url": "https://u.expo.dev/f822633a-553e-44be-9ab2-b6aaca18097e"
     },
+
     "owner": "asefeh"
   }
 }
