@@ -1,10 +1,22 @@
+// utils/importBooks.js
 import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
+import * as MediaLibrary from 'expo-media-library';
 import { insertBook } from '../database/Database';
 import { Alert, Platform } from 'react-native';
 
 export async function importBooksFromJSON() {
   try {
+    // ✅ Ask for storage permission on Android 13+
+    if (Platform.OS === 'android') {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('اجازه داده نشد', 'برای انتخاب فایل نیاز به دسترسی دارید.');
+        return;
+      }
+    }
+
+    // ✅ Open file picker
     const result = await DocumentPicker.getDocumentAsync({
       type: 'application/json',
       copyToCacheDirectory: true,
@@ -17,36 +29,42 @@ export async function importBooksFromJSON() {
 
     console.log('📂 Selected file URI:', result.uri);
     let fileUri = result.uri;
+    let jsonString = '';
 
-    // 📦 Copy file into app sandbox so we can safely read it
-    const destUri = FileSystem.cacheDirectory + 'import_books.json';
     try {
-      await FileSystem.copyAsync({ from: fileUri, to: destUri });
-      console.log('✅ File copied to sandbox:', destUri);
+      // 🧠 Try to read JSON directly
+      jsonString = await FileSystem.readAsStringAsync(fileUri);
+      console.log('✅ Direct read successful');
     } catch (err) {
-      console.error('❌ Copy failed (trying content:// fallback):', err);
+      console.warn('⚠️ Direct read failed, trying content:// fallback:', err);
+
+      // ⚙️ For Android "content://" URIs (e.g., Gmail/Downloads)
       if (Platform.OS === 'android' && fileUri.startsWith('content://')) {
-        // Fallback: use base64 read/write
-        const base64 = await FileSystem.readAsStringAsync(fileUri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        await FileSystem.writeAsStringAsync(destUri, base64, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        console.log('✅ Copied via base64 fallback:', destUri);
+        try {
+          const base64 = await FileSystem.readAsStringAsync(fileUri, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          const destUri = FileSystem.cacheDirectory + 'import_books.json';
+          await FileSystem.writeAsStringAsync(destUri, base64, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          jsonString = await FileSystem.readAsStringAsync(destUri);
+          console.log('✅ Successfully copied and read content:// file');
+        } catch (innerErr) {
+          console.error('❌ Failed to handle content:// URI:', innerErr);
+          Alert.alert('خطا', 'خواندن فایل انتخاب‌شده ممکن نیست.');
+          return;
+        }
       } else {
-        Alert.alert('خطا', 'فایل انتخابی قابل خواندن نیست.');
+        Alert.alert('خطا', 'فایل انتخاب‌شده قابل خواندن نیست.');
         return;
       }
     }
 
-    // 🧠 Read JSON from the safe local copy
-    const jsonString = await FileSystem.readAsStringAsync(destUri);
-    console.log('📖 Raw JSON string (first 200 chars):', jsonString.substring(0, 200));
+    console.log('📖 JSON preview:', jsonString.substring(0, 200));
 
+    // ✅ Parse and import
     const books = JSON.parse(jsonString);
-    console.log(`📚 Found ${books.length} books in file`);
-
     if (!Array.isArray(books) || books.length === 0) {
       Alert.alert('⚠️ هشدار', 'فایل انتخاب‌شده هیچ کتابی ندارد.');
       return;
